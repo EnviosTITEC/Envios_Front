@@ -13,7 +13,7 @@ import InputPassWord from "../../components/mui/InputPassWord";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import imagenregister from "../../assets/login/default.png";
-import logo from "../../assets/EII_logo.png";
+import logo from "../../assets/EII_logo2.svg";
 import { useNavigate } from "react-router-dom";
 
 function Register() {

@@ -10,7 +10,7 @@
 }
 
 :root {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Nunito", "Roboto", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
@@ -20,9 +20,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  --color-darkgreen: #002E38;
-  --color-blue: #003c58;
-  --color-turquesa: #06717e;
+  --color-darkgreen: #314C53;
+  --color-green: #5A7F78;
+  --color-turquesa: #5A7F78;
   --color-gris: #ebebeb;
   --color-white-smoke: #fefefe;
   --color-black: #1f1b1b;
@@ -57,7 +57,7 @@ body {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #F0FDF4; /* soft green background */
   }
 
   a:hover {

@@ -1,23 +1,34 @@
 import { Outlet } from "react-router-dom";
-import useWindowDimensions from "../../scripts/useWindowDimensions";
+import { Box } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import HeaderGPI from "./menuHeader/HeaderGPI";
 
 function MainLayout() {
-  const { width } = useWindowDimensions();
-  return (
-    <>
-      <div className="flex flex-1 w-full max-h-screen">
-        <div className="flex flex-1 flex-col overflow-hidden lg:flex-row max-h-screen">
-          {width > 1024 ? <HeaderGPI /> : <HeaderGPI isMobile />}
+  const theme = useTheme();
+  // ↓ breakpoint más bajo para que el zoom no dispare modo móvil
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // antes usabas 1024 (lg)
 
-          <main className="flex-1 overflow-y-auto">
-            <div className="flex-1 px-6 py-8 overflow-y-auto w-full max-h-screen  h-full">
-              {<Outlet />}
-            </div>
-          </main>
-        </div>
+  return (
+    <div className="flex w-full min-h-screen">
+      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Header + menú: pasa isMobile según breakpoint */}
+        <HeaderGPI isMobile={!isDesktop} />
+
+        <main className="flex-1 overflow-y-auto">
+          <Box
+            sx={{
+              px: 3,        // ≈ Tailwind p-6
+              py: 4,
+              minHeight: "100dvh",
+              bgcolor: "background.default", // usa el tema (blanco)
+            }}
+          >
+            <Outlet />
+          </Box>
+        </main>
       </div>
-    </>
+    </div>
   );
 }
 

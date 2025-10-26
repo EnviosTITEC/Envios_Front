@@ -12,7 +12,7 @@ import { useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import InputPassWord from "../../components/mui/InputPassWord";
-import logo from "../../assets/EII_logo.png";
+import logo from "../../assets/EII_logo2.svg";
 import imagenlogin from "../../assets/login/default.png";
 import { useNavigate } from "react-router-dom";
 

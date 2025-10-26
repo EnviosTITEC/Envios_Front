@@ -2,17 +2,67 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-    />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Escala y rendering -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="theme-color" content="#2F9051" />
 
-    <title>GPI Project</title>
+    <!-- SEO básico -->
+    <title>PulgaShop — Sistema de Envíos</title>
+    <meta name="description" content="PulgaShop: gestiona direcciones, cotiza, envía y haz seguimiento de tus envíos desde un solo lugar." />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PulgaShop — Sistema de Envíos" />
+    <meta property="og:description" content="Gestión de envíos moderna: direcciones, cotizaciones, tracking y más." />
+    <meta property="og:image" content="/default.png" />
+    <meta property="og:site_name" content="PulgaShop" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PulgaShop — Sistema de Envíos" />
+    <meta name="twitter:description" content="Gestión de envíos moderna: direcciones, cotizaciones, tracking y más." />
+    <meta name="twitter:image" content="/default.png" />
+
+    <!-- Iconos / PWA (ajusta rutas si ya tienes tus propios iconos) -->
+    <link rel="icon" href="/vite.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+    <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#2F9051" />
+    <meta name="msapplication-TileColor" content="#2F9051" />
+    <!-- <link rel="manifest" href="/site.webmanifest" /> -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+    <!-- Fuentes: Inter + Roboto (queda muy bien con MUI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Material Icons (rounded se ve más moderno) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@400;500;700" rel="stylesheet" />
+
+    <!-- Estilo base delicado (puedes mover esto a index.css si prefieres) -->
+    <style>
+      :root { --brand: #2F9051; --bg: #F2FBF5; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        font-family: "Inter", "Roboto", system-ui, -apple-system, Segoe UI,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        color: #0f172a;
+      }
+      #root { min-height: 100dvh; }
+    </style>
   </head>
+
   <body>
+    <noscript>Para usar PulgaShop necesitas habilitar JavaScript.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

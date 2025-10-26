@@ -1,7 +1,15 @@
-import React from 'react'
+import { Box, Typography } from "@mui/material";
 
-function Home() {
-  return <div className="flex flex-col h-full lg:pt-14 flex-1">Home</div>;
+
+export default function Home() {
+  return (
+    <section className="p-6">
+      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+        <Typography variant="h4" fontWeight={700} gutterBottom>
+          Bienvenido a PulgaShop
+        </Typography>
+      </Box>
+    </section>
+  );
+
 }
-
-export default Home

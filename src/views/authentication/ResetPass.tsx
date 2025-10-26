@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TextField, Button, Typography, Box } from "@mui/material";
 import { styled } from "@mui/material/styles"; 
-import logo from "../../assets/EII_logo.png";
+import logo from "../../assets/EII_logo2.svg";
 
 // Estilos personalizados con styled para el botón
 const ResetButton = styled(Button)(() => ({
