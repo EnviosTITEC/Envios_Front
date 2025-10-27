@@ -3,7 +3,7 @@ import { Box, Stack } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import HomeIcon from "@mui/icons-material/Home";
 import { Link, useLocation, Outlet } from "react-router-dom";
-import NavButton from "../../components/ui/NavButton";
+import NavButton from "../../components/ui/navigation/NavButton";
 
 export default function ShippingLayout() {
   const { pathname } = useLocation();
