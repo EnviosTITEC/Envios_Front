@@ -25,7 +25,6 @@ import { labelOfAddress, getCommune } from "../../utils/addressHelpers";
 import type { AddressRow } from "../../types/address";
 import type { QuoteOption } from "../../types/postal";
 
-const RADIUS = 8;
 const SUBTLE_BORDER = "1px solid rgba(0, 0, 0, 0.08)";
 
 export default function Quote() {
@@ -183,14 +182,14 @@ export default function Quote() {
             <Box
               sx={{
                 border: "2px solid #e0e0e0",
-                borderRadius: "4px",
-                p: 2.5,
+                borderRadius: "8px",
+                p: 2,
                 backgroundColor: "rgba(0, 0, 0, 0.02)",
               }}
             >
-              <Stack spacing={2.5}>
+              <Stack spacing={1.5}>
                 <Box>
-                  <Typography variant="caption" sx={{ display: "block", mb: 1, fontWeight: 500, color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 500, color: "text.secondary" }}>
                     Origen (fijo)
                   </Typography>
                   <TextField
@@ -198,32 +197,43 @@ export default function Quote() {
                     value="Santiago, Chile"
                     disabled
                     size="small"
-                    sx={{ "& .MuiInputBase-input": { overflow: "hidden", textOverflow: "ellipsis" } }}
+                    sx={{ 
+                      "& .MuiInputBase-input": { 
+                        overflow: "hidden", 
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap"
+                      } 
+                    }}
                   />
                 </Box>
 
-                <Autocomplete
-                  options={addressOptions}
-                  getOptionLabel={(opt) => opt.label}
-                  value={
-                    selectedAddress
-                      ? {
-                          label: labelOfAddress(selectedAddress),
-                          value: selectedAddress,
-                        }
-                      : null
-                  }
-                  onChange={(_, newValue) =>
-                    setSelectedAddress(newValue?.value || null)
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Dirección de destino"
-                      placeholder="Selecciona a donde enviar"
-                    />
-                  )}
-                />
+                <Box>
+                  <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 500, color: "text.secondary" }}>
+                    Dirección de destino
+                  </Typography>
+                  <Autocomplete
+                    options={addressOptions}
+                    getOptionLabel={(opt) => opt.label}
+                    value={
+                      selectedAddress
+                        ? {
+                            label: labelOfAddress(selectedAddress),
+                            value: selectedAddress,
+                          }
+                        : null
+                    }
+                    onChange={(_, newValue) =>
+                      setSelectedAddress(newValue?.value || null)
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Selecciona a donde enviar"
+                        size="small"
+                      />
+                    )}
+                  />
+                </Box>
 
                 <TextField
                   fullWidth
@@ -232,20 +242,23 @@ export default function Quote() {
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
                   inputProps={{ step: "0.1", min: "0.1" }}
+                  size="small"
                 />
 
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
                   <TextField
                     label="Alto (cm)"
                     type="number"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
+                    size="small"
                   />
                   <TextField
                     label="Ancho (cm)"
                     type="number"
                     value={width}
                     onChange={(e) => setWidth(e.target.value)}
+                    size="small"
                   />
                 </Box>
 
@@ -255,6 +268,7 @@ export default function Quote() {
                   type="number"
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
+                  size="small"
                 />
 
                 <TextField
@@ -263,6 +277,7 @@ export default function Quote() {
                   type="number"
                   value={declaredWorth}
                   onChange={(e) => setDeclaredWorth(e.target.value)}
+                  size="small"
                 />
 
                 <Button
@@ -270,12 +285,13 @@ export default function Quote() {
                   fullWidth
                   onClick={handleQuote}
                   disabled={loading}
-                  sx={{ mt: 1 }}
+                  sx={{ mt: 0.5 }}
+                  size="small"
                 >
                   {loading ? (
-                    <CircularProgress size={24} />
+                    <CircularProgress size={20} />
                   ) : (
-                    "Calcular cotización"
+                    "Calcular"
                   )}
                 </Button>
               </Stack>
@@ -293,7 +309,7 @@ export default function Quote() {
                 sx={{
                   p: 3,
                   textAlign: "center",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   border: SUBTLE_BORDER,
                   backgroundColor: "action.hover",
                 }}
@@ -305,15 +321,15 @@ export default function Quote() {
                 </Typography>
               </Box>
             ) : (
-              <Stack spacing={1.5}>
+              <Stack spacing={1}>
                 {quotes.map((quote, idx) => (
                   <Card
                     key={idx}
                     sx={{
-                      p: 2,
+                      p: 1.5,
                       cursor: "pointer",
                       border: "2px solid",
-                      borderRadius: "4px",
+                      borderRadius: "8px",
                       borderColor:
                         selectedQuote?.serviceCode === quote.serviceCode
                           ? "primary.main"
@@ -367,9 +383,10 @@ export default function Quote() {
                   fullWidth
                   onClick={() => setShowConfirm(true)}
                   disabled={!selectedQuote}
-                  sx={{ mt: 2 }}
+                  sx={{ mt: 1 }}
+                  size="small"
                 >
-                  Confirmar envío
+                  Confirmar
                 </Button>
               </Stack>
             )}
@@ -384,55 +401,57 @@ export default function Quote() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Confirmar envío</DialogTitle>
+        <DialogTitle sx={{ pb: 1, pt: 2 }}>Confirmar envío</DialogTitle>
         <DialogContent>
-          <Stack spacing={1.5} sx={{ mt: 2 }}>
+          <Stack spacing={1} sx={{ mt: 1 }}>
             <Box>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ fontWeight: 500 }} color="text.secondary">
                 Dirección
               </Typography>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ mt: 0.25 }}>
                 {selectedAddress ? labelOfAddress(selectedAddress) : "-"}
               </Typography>
             </Box>
             <Box>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ fontWeight: 500 }} color="text.secondary">
                 Paquete
               </Typography>
-              <Typography variant="body2">
+              <Typography variant="body2" sx={{ mt: 0.25 }}>
                 {weight} kg | {height}x{width}x{length} cm
               </Typography>
             </Box>
             <Box>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ fontWeight: 500 }} color="text.secondary">
                 Servicio
               </Typography>
-              <Typography variant="body2">{selectedQuote?.serviceName}</Typography>
+              <Typography variant="body2" sx={{ mt: 0.25 }}>{selectedQuote?.serviceName}</Typography>
             </Box>
             <Box
               sx={{
-                p: 1.5,
-                borderRadius: RADIUS,
+                p: 1.2,
+                borderRadius: "8px",
                 backgroundColor: "rgba(25, 103, 210, 0.08)",
+                mt: 0.5
               }}
             >
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ fontWeight: 500 }} color="text.secondary">
                 Total
               </Typography>
-              <Typography variant="h6" sx={{ color: "primary.main" }}>
+              <Typography variant="h6" sx={{ color: "primary.main", mt: 0.25 }}>
                 ${selectedQuote?.price.toLocaleString("es-CL")} CLP
               </Typography>
             </Box>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowConfirm(false)}>Cancelar</Button>
+        <DialogActions sx={{ p: 2, pt: 1 }}>
+          <Button onClick={() => setShowConfirm(false)} size="small">Cancelar</Button>
           <Button
             variant="contained"
             onClick={handleCreateDelivery}
             disabled={creatingDelivery}
+            size="small"
           >
-            {creatingDelivery ? <CircularProgress size={24} /> : "Crear envío"}
+            {creatingDelivery ? <CircularProgress size={20} /> : "Crear envío"}
           </Button>
         </DialogActions>
       </Dialog>
