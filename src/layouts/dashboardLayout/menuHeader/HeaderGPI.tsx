@@ -1,9 +1,13 @@
-// HeaderGPI.tsx
-/**
- * Menú lateral (Desktop retraíble + Móvil drawer)
- * – Flecha de colapso centrada en rail y a la derecha cuando está expandido
- */
-import { Avatar, Box, Typography, Tooltip } from "@mui/material";
+// src/layouts/dashboardLayout/menuHeader/HeaderGPI.tsx
+import {
+  Avatar,
+  Box,
+  Typography,
+  Tooltip,
+  IconButton,
+  useTheme,
+  alpha,
+} from "@mui/material";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -17,6 +21,7 @@ interface HeaderGPIProps {
 }
 
 export default function HeaderGPI({ isMobile = false }: HeaderGPIProps) {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -67,198 +72,317 @@ export default function HeaderGPI({ isMobile = false }: HeaderGPIProps) {
 
   const redirectTo = (path: string) => navigate(path);
 
-  const RAIL_WIDTH = 72;    // ancho del rail colapsado
-  const FULL_WIDTH = 320;   // ancho expandido
+  const RAIL_WIDTH = 72;
+  const FULL_WIDTH = 320;
   const currentWidth = collapsed ? RAIL_WIDTH : FULL_WIDTH;
 
-  /* -------------------- MÓVIL -------------------- */
+  // ----------- MÓVIL -----------
   if (isMobile) {
     return (
       <nav>
-        <div className="h-16 w-full bg-(--color-green)">
-          <div className="flex w-full h-full items-center justify-end p-4 py-0">
-            <div
-              onClick={openMenuAction}
-              className="cursor-pointer p-2 text-white hover:bg-white rounded-full hover:bg-opacity-10 hover:text-(--color-darkgreen)"
+        <Box
+          sx={{
+            height: 64,
+            width: "100%",
+            bgcolor: "primary.main",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            px: 2,
+          }}
+        >
+          <IconButton
+            onClick={openMenuAction}
+            sx={{
+              color: theme.palette.primary.contrastText,
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.contrastText, 0.1),
+              },
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              width={26}
+              height={26}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        <DrawerNav closeMenuAction={closeMenuAction} openMenu={openMenu} menuItems={actionsMenu} />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          </IconButton>
+        </Box>
+        <DrawerNav
+          closeMenuAction={closeMenuAction}
+          openMenu={openMenu}
+          menuItems={actionsMenu}
+        />
       </nav>
     );
   }
 
-  /* ------------------ DESKTOP -------------------- */
+  // ----------- DESKTOP -----------
   return (
     <nav
-      className="flex flex-col bg-(--color-green) h-full overflow-hidden"
       style={{
         width: currentWidth,
         transition: "width 200ms ease",
-        position: "relative",           // para posicionar la flecha
+        position: "relative",
       }}
     >
-      {/* Toggle FAB (no altera los círculos de los íconos) */}
       <Box
         sx={{
-          position: "absolute",
-          top: 14,
-          // centrado cuando está colapsado; pegado a la derecha cuando está expandido
-          left: collapsed ? "50%" : "auto",
-          transform: collapsed ? "translateX(-50%)" : "none",
-          right: collapsed ? "auto" : 12,
-          width: 50,
-          height: 38,
-          borderRadius: "80px",
-          display: "grid",
-          placeItems: "center",
-          color: "#fff",
-          cursor: "pointer",
-          // mismo lenguaje visual que tus círculos: borde + halo suave
-          background: "rgba(255,255,255,0.12)",
-          border: "0.5px solid rgba(255,255,255,0.55)",
-          boxShadow:
-            "0 5px 15px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.14)",
-          backdropFilter: "blur(2px)",
-          transition: "transform .15s ease, background-color .2s ease",
-          "&:hover": {
-            background: "rgba(255,255,255,0.18)",
-            transform: collapsed ? "translateX(-50%) scale(1.04)" : "scale(1.04)",
-          },
-          "&:active": {
-            transform: collapsed ? "translateX(-50%) scale(.98)" : "scale(.98)",
-          },
-          zIndex: 2,
-        }}
-        onClick={() => setCollapsed(v => !v)}
-        aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
-      >
-        {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-      </Box>
-
-      {/* Contenido scrollable del menú */}
-      <div
-        className="flex flex-col justify-between"
-        style={{
+          bgcolor: "primary.main",
           height: "100%",
-          padding: collapsed ? "48px 12px 12px" : "56px 16px 16px", // deja espacio a la flecha arriba
+          color: theme.palette.primary.contrastText,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          overflow: "hidden",
         }}
       >
-        {/* Logo (solo expandido) */}
-        {!collapsed && (
-          <Box width="100%" className="flex flex-col justify-center items-center pt-4 pb-2">
+        {/* Toggle FAB */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 14,
+            left: collapsed ? "50%" : "auto",
+            transform: collapsed ? "translateX(-50%)" : "none",
+            right: collapsed ? "auto" : 12,
+            width: 50,
+            height: 38,
+            borderRadius: "80px",
+            display: "grid",
+            placeItems: "center",
+            cursor: "pointer",
+            color: theme.palette.primary.contrastText,
+            background: alpha(theme.palette.primary.contrastText, 0.12),
+            border: `0.5px solid ${alpha(
+              theme.palette.primary.contrastText,
+              0.55
+            )}`,
+            boxShadow:
+              "0 5px 15px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.14)",
+            backdropFilter: "blur(2px)",
+            transition: "transform .15s ease, background-color .2s ease",
+            "&:hover": {
+              background: alpha(theme.palette.primary.contrastText, 0.18),
+              transform: collapsed
+                ? "translateX(-50%) scale(1.04)"
+                : "scale(1.04)",
+            },
+            "&:active": {
+              transform: collapsed
+                ? "translateX(-50%) scale(.98)"
+                : "scale(.98)",
+            },
+            zIndex: 2,
+          }}
+          onClick={() => setCollapsed((v) => !v)}
+          aria-label={collapsed ? "Expandir menú" : "Contraer menú"}
+        >
+          {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </Box>
+
+        {/* Contenido scrollable del menú */}
+        <Box
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            p: collapsed ? "48px 12px 12px" : "56px 16px 16px",
+          }}
+        >
+          {/* Logo (solo expandido) */}
+          {!collapsed && (
             <Box
               sx={{
-                display: "inline-block",
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "rgba(255,255,255,0.08)",
-                boxShadow: "0 1px 5px rgba(0,0,0,.12)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                py: 2,
               }}
             >
-              <Box component="img" src={logo} alt="PulgaShop" sx={{ width: 200, height: 90, objectFit: "contain" }} />
+              <Box
+                sx={{
+                  display: "inline-block",
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: alpha(theme.palette.primary.contrastText, 0.08),
+                  boxShadow: `0 1px 5px ${alpha(
+                    theme.palette.common.black,
+                    0.12
+                  )}`,
+                }}
+              >
+                <Box
+                  component="img"
+                  src={logo}
+                  alt="PulgaShop"
+                  sx={{ width: 200, height: 90, objectFit: "contain" }}
+                />
+              </Box>
             </Box>
-          </Box>
-        )}
+          )}
 
-        {/* ITEMS */}
-        <Box className="flex-1 w-full" sx={{ mt: collapsed ? 1 : 4 }}>
-          {actionsMenu.map((item, index) => {
-            const active = item.isActive(pathname);
+          {/* ITEMS */}
+          <Box
+            sx={{
+              mt: collapsed ? 1 : 4,
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1, // ← separa los botones del menú
+            }}
+          >
+            {actionsMenu.map((item, index) => {
+              const active = item.isActive(pathname);
 
-            if (collapsed) {
-              // Rail colapsado: botón cuadrado 48x48 centrado
+              if (collapsed) {
+                return (
+                  <Tooltip key={index} title={item.name} placement="right">
+                    <Box
+                      onClick={() => redirectTo(item.href)}
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        mx: "auto",
+                        my: 1,
+                        borderRadius: 2,
+                        display: "grid",
+                        placeItems: "center",
+                        color: theme.palette.primary.contrastText,
+                        cursor: "pointer",
+                        transition:
+                          "background-color .2s ease, transform .06s ease",
+                        bgcolor: active
+                          ? alpha(theme.palette.primary.contrastText, 0.14)
+                          : "transparent",
+                        border: active
+                          ? `1px solid ${alpha(
+                              theme.palette.primary.contrastText,
+                              0.35
+                            )}`
+                          : "1px solid transparent",
+                        "&:hover": {
+                          bgcolor: alpha(
+                            theme.palette.primary.contrastText,
+                            0.18
+                          ),
+                        },
+                        "&:active": { transform: "scale(0.98)" },
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                  </Tooltip>
+                );
+              }
+
               return (
-                <Tooltip key={index} title={item.name} placement="right">
+                <Box
+                  key={index}
+                  onClick={() => redirectTo(item.href)}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    px: 2,
+                    py: 1.2,
+                    minHeight: 44,
+                    borderRadius: 2,
+                    cursor: "pointer",
+                    overflow: "hidden", // evita solapamiento visual
+                    bgcolor: active
+                      ? alpha(theme.palette.primary.contrastText, 0.18)
+                      : "transparent",
+                    border: active
+                      ? `0.5px solid ${alpha(
+                          theme.palette.primary.contrastText,
+                          0.35
+                        )}`
+                      : "0.5px solid transparent",
+                    "&:hover": {
+                      bgcolor: alpha(
+                        theme.palette.primary.contrastText,
+                        0.12
+                      ),
+                    },
+                    transition: "background-color .2s ease, border .2s ease",
+                  }}
+                >
                   <Box
-                    onClick={() => redirectTo(item.href)}
                     sx={{
-                      width: 48,
-                      height: 48,
-                      mx: "auto",
-                      my: 1,
-                      borderRadius: 12,
+                      width: 4,
+                      alignSelf: "stretch",
+                      borderRadius: 8,
+                      bgcolor: active
+                        ? theme.palette.primary.contrastText
+                        : "transparent",
+                      opacity: active ? 0.9 : 0,
+                      transition: "opacity .2s",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      color: theme.palette.primary.contrastText,
+                      opacity: active ? 1 : 0.9,
                       display: "grid",
                       placeItems: "center",
-                      color: "#fff",
-                      cursor: "pointer",
-                      transition: "background-color .2s ease, transform .06s ease",
-                      bgcolor: active ? "rgba(255,255,255,0.14)" : "transparent",
-                      border: active ? "1px solid rgba(255,255,255,.35)" : "1px solid transparent",
-                      "&:hover": { bgcolor: "rgba(255,255,255,.18)" },
-                      "&:active": { transform: "scale(0.98)" },
                     }}
                   >
                     {item.icon}
                   </Box>
-                </Tooltip>
+                  <Typography
+                    fontSize={18}
+                    lineHeight="24px"
+                    fontWeight={active ? 700 : 400}
+                    color={theme.palette.primary.contrastText}
+                  >
+                    {item.name}
+                  </Typography>
+                </Box>
               );
-            }
+            })}
+          </Box>
 
-            // Rail expandido
-            return (
-              <div
-                key={index}
-                onClick={() => redirectTo(item.href)}
-                className="group flex items-center gap-3 rounded-lg cursor-pointer"
-                style={{
-                  padding: "12px",
-                  border: active ? "0.5px solid rgba(255,255,255,.35)" : "0.5px solid transparent",
-                  background: active ? "rgba(255,255,255,0.18)" : "transparent",
-                }}
-              >
-                <span
-                  style={{
-                    width: 4,
-                    alignSelf: "stretch",
-                    borderRadius: 8,
-                    background: active ? "#F7F8FC" : "transparent",
-                    opacity: active ? 0.9 : 0,
-                    transition: "opacity .2s",
-                  }}
-                />
-                <div
-                  className="text-white group-hover:text-[#FFFFFF]"
-                  style={{ opacity: active ? 1 : 0.9 }}
-                >
-                  {item.icon}
-                </div>
+          {/* Usuario */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              borderRadius: 2,
+              gap: collapsed ? 0 : 1.5,
+              p: collapsed ? 1 : 1.5,
+            }}
+          >
+            <Avatar sx={{ width: 40, height: 40, fontSize: 14 }}>JD</Avatar>
+            {!collapsed && (
+              <Box>
                 <Typography
-                  fontSize={18}
-                  lineHeight={"24px"}
-                  fontWeight={active ? 700 : 400}
-                  sx={{ color: "#F7F8FC" }}
+                  variant="subtitle2"
+                  fontWeight={600}
+                  color={theme.palette.primary.contrastText}
                 >
-                  {item.name}
+                  John Doe
                 </Typography>
-              </div>
-            );
-          })}
+                <Typography
+                  variant="body2"
+                  color={alpha(theme.palette.primary.contrastText, 0.85)}
+                >
+                  Admin
+                </Typography>
+              </Box>
+            )}
+          </Box>
         </Box>
-
-        {/* Usuario */}
-        <div
-          className="flex items-center rounded-lg"
-          style={{
-            padding: collapsed ? 8 : "8px 12px",
-            gap: collapsed ? 0 : 10,
-          }}
-        >
-          <Avatar className="w-10 h-10 rounded-full" alt="avatar" sx={{ fontSize: 14 }}>
-            JD
-          </Avatar>
-          {!collapsed && (
-            <div>
-              <h4 className="text-md font-medium text-white leading-tight">John Doe</h4>
-              <p className="text-sm font-light text-white mt-[-2px]">Admin</p>
-            </div>
-          )}
-        </div>
-      </div>
+      </Box>
     </nav>
   );
 }

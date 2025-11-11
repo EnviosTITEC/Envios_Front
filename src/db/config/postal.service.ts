@@ -23,7 +23,7 @@ const API_BASE =
 export async function getRegionsWithProvincesAndCommunes(): Promise<PostalRegion[]> {
   if (_cache) return _cache;
 
-  const res = await fetch(`${API_BASE}/postal/regions-tree`, {
+  const res = await fetch(`${API_BASE}/geo/cl/regions`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });

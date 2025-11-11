@@ -1,24 +1,24 @@
+// src/layouts/BlankLayout.tsx
 import { Outlet } from "react-router-dom";
+import { Box } from "@mui/material";
 
-const BlankLayout = () => {
+/**
+ * Layout básico sin navegación ni cabecera.
+ * Ideal para vistas de login, error o páginas independientes.
+ * Adaptado al tema PulgaShop.
+ */
+export default function BlankLayout() {
   return (
-    <>
-      <div
-        className="page-wrap"
-        style={{
-          display: "flex",
-          top: "0px",
-          right: "0px",
-          left: "0px",
-          bottom: "0px",
-          backgroundColor: "#F3F2F6",
-          borderRadius: 0,
-        }}
-      >
-        <Outlet />
-      </div>
-    </>
+    <Box
+      sx={{
+        minHeight: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: (t) => t.palette.background.default,
+        color: (t) => t.palette.text.primary,
+      }}
+    >
+      <Outlet />
+    </Box>
   );
-};
-
-export default BlankLayout;
+}

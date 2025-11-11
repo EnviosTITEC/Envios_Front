@@ -6,7 +6,7 @@ const API_BASE =
 /** 🔹 Obtener todas las direcciones de un usuario */
 export async function fetchAddresses(userId: string): Promise<AddressRow[]> {
   const res = await fetch(
-    `${API_BASE}/address/addresses?userId=${encodeURIComponent(userId)}`,
+    `${API_BASE}/addresses?userId=${encodeURIComponent(userId)}`,
     {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -36,7 +36,7 @@ export async function createAddress(
     userId,
   };
 
-  const res = await fetch(`${API_BASE}/address/addresses`, {
+  const res = await fetch(`${API_BASE}/addresses`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -64,7 +64,7 @@ export async function updateAddress(
     references: data.references?.trim() || "",
   };
 
-  const res = await fetch(`${API_BASE}/address/addresses/${id}`, {
+  const res = await fetch(`${API_BASE}/addresses/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -79,7 +79,7 @@ export async function updateAddress(
 
 /** 🔹 Eliminar una dirección */
 export async function deleteAddress(id: number | string): Promise<void> {
-  const res = await fetch(`${API_BASE}/address/addresses/${id}`, {
+  const res = await fetch(`${API_BASE}/addresses/${id}`, {
     method: "DELETE",
   });
 

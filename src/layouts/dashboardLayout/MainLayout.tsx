@@ -1,35 +1,73 @@
+// src/layouts/MainLayout.tsx
 import { Outlet } from "react-router-dom";
 import { Box } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import HeaderGPI from "./menuHeader/HeaderGPI";
+import { useEffect, useState } from "react";
 
-function MainLayout() {
-  const theme = useTheme();
-  // ↓ breakpoint más bajo para que el zoom no dispare modo móvil
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // antes usabas 1024 (lg)
+/**
+ * Layout principal PulgaShop
+ * - Detección móvil robusta (usa visualViewport cuando está disponible).
+ * - Funciona de forma consistente aunque cambies el % de zoom.
+ */
+export default function MainLayout() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Cambia este valor si quieres que el menú colapse antes o después
+  const MOBILE_CUTOFF = 1280;
+
+  const readViewportWidth = () =>
+    (window as any).visualViewport?.width ?? window.innerWidth;
+
+  useEffect(() => {
+    const update = () => {
+      const vw = readViewportWidth();
+      setIsMobile(vw < MOBILE_CUTOFF);
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    (window as any).visualViewport?.addEventListener?.("resize", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+      (window as any).visualViewport?.removeEventListener?.("resize", update);
+    };
+  }, [MOBILE_CUTOFF]);
 
   return (
-    <div className="flex w-full min-h-screen">
-      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
-        {/* Header + menú: pasa isMobile según breakpoint */}
-        <HeaderGPI isMobile={!isDesktop} />
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100dvh",
+        bgcolor: "background.default",
+        color: "text.primary",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          flex: 1,
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
+        {/* Menú: Drawer en móvil, rail en desktop */}
+        <HeaderGPI isMobile={isMobile} />
 
-        <main className="flex-1 overflow-y-auto">
-          <Box
-            sx={{
-              px: 3,        // ≈ Tailwind p-6
-              py: 4,
-              minHeight: "100dvh",
-              bgcolor: "background.default", // usa el tema (blanco)
-            }}
-          >
-            <Outlet />
-          </Box>
-        </main>
-      </div>
-    </div>
+        {/* Contenido */}
+        <Box
+          component="main"
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            px: { xs: 2, sm: 3 },
+            py: { xs: 3, sm: 4 },
+          }}
+        >
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
   );
 }
-
-export default MainLayout;

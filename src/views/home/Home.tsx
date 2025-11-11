@@ -1,15 +1,27 @@
 import { Box, Typography } from "@mui/material";
 
-
+/**
+ * Vista placeholder de bienvenida.
+ * Esta pantalla solo muestra el mensaje de inicio
+ * mientras otro equipo gestiona la parte principal.
+ */
 export default function Home() {
   return (
-    <section className="p-6">
-      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
-        <Typography variant="h4" fontWeight={700} gutterBottom>
-          Bienvenido a PulgaShop
-        </Typography>
-      </Box>
-    </section>
+    <Box
+      component="section"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60dvh",
+        textAlign: "center",
+        px: 2,
+      }}
+    >
+      <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom>
+        Bienvenido a PulgaShop
+      </Typography>
+    </Box>
   );
-
 }

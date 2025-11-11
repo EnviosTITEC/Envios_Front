@@ -1,109 +1,154 @@
-// theme.mui.ts
-import { createTheme } from "@mui/material/styles";
+import { createTheme, alpha, type ThemeOptions } from "@mui/material/styles";
+import { deepmerge } from "@mui/utils";
+import { getPulgaTheme } from "pulga-shop-ui";
 
-const TEAL = "#5A7F78";
-const TEAL_DARK = "#314C53";
+const base = getPulgaTheme();
 
-const theme = createTheme({
-  palette: {
-    primary: { main: TEAL },
-    background: {
-      default: "#F0FDF4",
-      paper: "#FFFFFF",
-    },
-    text: {
-      primary: "#1F1F1F",
-      secondary: "#5F5F5F",
-    },
-  },
+// Color primario (ajústalo si quieres otro)
+base.palette.primary = {
+  ...base.palette.primary,
+  main: "#528275",
+  light: "#6e9a8e",
+  dark: "#3a5e55",
+  contrastText: "#ffffff",
+};
 
-  typography: {
-    fontFamily: "'Poppins', 'Roboto', 'Helvetica', 'Arial', sans-serif",
-    h5: { fontWeight: 700 },
-    button: { textTransform: "none", fontWeight: 600, letterSpacing: "0.3px" },
-  },
-
+// Overrides
+const { palette } = base;
+const overrides: ThemeOptions = {
   components: {
-    /* --- Reset y estilos globales reutilizables (Paso 4) --- */
-    MuiCssBaseline: {
+    MuiDialog: {
       styleOverrides: {
-        /* Scrollbar global (coincide con tus tablas) */
-        "*, *::before, *::after": {
-          scrollbarColor: `${TEAL} transparent`,
-          scrollbarWidth: "thin",
-        },
-        "*::-webkit-scrollbar": { height: 8, width: 8 },
-        "*::-webkit-scrollbar-track": { background: "transparent" },
-        "*::-webkit-scrollbar-thumb": {
-          backgroundColor: "rgba(90,127,120,0.4)",
-          borderRadius: 8,
-        },
-        "*::-webkit-scrollbar-thumb:hover": {
-          backgroundColor: "rgba(90,127,120,0.6)",
+        paper: {
+          borderRadius: 16,
+          boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
+          border: `1px solid ${alpha(palette.primary.main, 0.08)}`,
+          backgroundColor: palette.background.paper,
         },
       },
     },
-
-    /* --- Botones (incluye variante “cta” para Nueva dirección) --- */
+    MuiTextField: { defaultProps: { size: "small", fullWidth: true } },
+    MuiAutocomplete: {
+      defaultProps: { size: "small" },
+      styleOverrides: {
+        paper: {
+          borderRadius: 8,
+          boxShadow: "0 12px 28px rgba(0,0,0,.12)",
+          border: `1px solid ${alpha(palette.primary.main, 0.08)}`,
+        },
+        listbox: { padding: 6, maxHeight: 280 },
+        option: {
+          borderRadius: 6,
+          padding: "8px 10px",
+          margin: "2px 6px",
+          minHeight: 36,
+          "&::before": { display: "none" },
+          "&::after": { display: "none" },
+          "&[aria-selected='true']": {
+            backgroundColor: alpha(palette.primary.main, 0.1),
+          },
+          "&.Mui-focused": {
+            backgroundColor: alpha(palette.primary.main, 0.12),
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6,
+          backgroundColor: palette.background.paper,
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: alpha(palette.text.primary, 0.18),
+          },
+          "&:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: alpha(palette.primary.main, 0.5),
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: palette.primary.main,
+            borderWidth: 2,
+          },
+        },
+        input: { paddingTop: 12, paddingBottom: 12 },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: { color: alpha(palette.text.primary, 0.75) },
+        asterisk: { color: palette.error.main },
+      },
+    },
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 12, padding: "10px 18px", boxShadow: "none" },
-        contained: { boxShadow: "0 2px 6px rgba(0,0,0,0.10)" },
+        root: { borderRadius: 12, textTransform: "none", fontWeight: 600 },
+        contained: { boxShadow: "0 6px 14px rgba(0,0,0,0.08)" },
       },
       variants: [
         {
-          props: { variant: "contained", color: "primary", size: "medium" },
+          props: { variant: "outlined", color: "primary" },
           style: {
-            backgroundColor: TEAL,
-            "&:hover": { backgroundColor: TEAL_DARK, boxShadow: "0 4px 10px rgba(0,0,0,0.12)" },
-          },
-        },
-        {
-          // variante super-liviana para “Nueva dirección”
-          props: { variant: "contained", color: "primary", size: "small" },
-          style: {
-            padding: "8px 14px",
-            borderRadius: 10,
-            backgroundColor: TEAL,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+            borderColor: alpha(palette.primary.main, 0.25),
+            backgroundColor: alpha(palette.primary.main, 0.04),
             "&:hover": {
-              backgroundColor: TEAL_DARK,
-              boxShadow: "0 4px 10px rgba(0,0,0,0.10)",
+              backgroundColor: alpha(palette.primary.main, 0.08),
+              borderColor: alpha(palette.primary.main, 0.4),
             },
           },
         },
         {
-          // “ghost” para los botones de la barra superior (sin fondos raros)
-          props: { variant: "text", color: "primary" },
+          props: { variant: "contained", size: "small" },
           style: {
-            color: TEAL,
-            backgroundColor: "transparent",
-            boxShadow: "none",
-            "&:hover": { backgroundColor: "transparent", color: TEAL_DARK },
-            "&:active": { backgroundColor: "transparent" },
-            "&:focus": { backgroundColor: "transparent" },
+            borderRadius: 10,
+            padding: "6px 14px",
+            boxShadow: "0 3px 8px rgba(0,0,0,0.08)",
           },
         },
       ],
     },
-
-    /* --- Card por defecto de páginas --- */
     MuiCard: {
+      defaultProps: { elevation: 1 },
       styleOverrides: {
-        root: { borderRadius: 10, boxShadow: "0 4px 10px rgba(0,0,0,0.05)" },
+        root: {
+          borderRadius: 16,
+          boxShadow: "0 10px 24px rgba(0,0,0,0.08)",
+          border: `1px solid ${alpha(palette.primary.main, 0.06)}`,
+          backgroundColor: palette.background.paper,
+        },
       },
     },
-
-    /* --- Tabla: header consistente --- */
     MuiTableHead: {
       styleOverrides: {
         root: {
-          backgroundColor: TEAL,
-          "& .MuiTableCell-root": { backgroundColor: TEAL, color: "#fff", fontWeight: 700 },
+          backgroundColor: palette.primary.main,
+          "& .MuiTableCell-root": {
+            backgroundColor: palette.primary.main,
+            color: palette.primary.contrastText,
+            fontWeight: 700,
+          },
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: {
+        "*:focus-visible": { outline: "none" },
+        "*, *::before, *::after": {
+          scrollbarColor: `${palette.primary.main} transparent`,
+          scrollbarWidth: "thin",
+        },
+        "*::-webkit-scrollbar": { width: 8, height: 8 },
+        "*::-webkit-scrollbar-thumb": {
+          backgroundColor: alpha(palette.primary.main, 0.4),
+          borderRadius: 8,
+        },
+        "*::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: alpha(palette.primary.main, 0.6),
         },
       },
     },
   },
-});
+};
+
+const merged = deepmerge(base, overrides);
+const theme = createTheme(merged as ThemeOptions);
 
 export default theme;
