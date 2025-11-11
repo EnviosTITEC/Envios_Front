@@ -63,7 +63,7 @@ export default function Quote() {
 
     // Validaciones
     if (!selectedAddress) {
-      setError("Selecciona una dirección de origen");
+      setError("Selecciona una dirección de destino");
       return;
     }
     if (!weight || parseFloat(weight) <= 0) {
@@ -180,80 +180,105 @@ export default function Quote() {
               Parámetros del envío
             </Typography>
 
-            <Stack spacing={2}>
-              <Autocomplete
-                options={addressOptions}
-                getOptionLabel={(opt) => opt.label}
-                value={
-                  selectedAddress
-                    ? {
-                        label: labelOfAddress(selectedAddress),
-                        value: selectedAddress,
-                      }
-                    : null
-                }
-                onChange={(_, newValue) =>
-                  setSelectedAddress(newValue?.value || null)
-                }
-                renderInput={(params) => (
+            <Box
+              sx={{
+                border: "2px solid #e0e0e0",
+                borderRadius: RADIUS,
+                p: 2.5,
+                backgroundColor: "rgba(0, 0, 0, 0.02)",
+              }}
+            >
+              <Stack spacing={2.5}>
+                <Box>
+                  <Typography variant="caption" sx={{ display: "block", mb: 1, fontWeight: 500, color: "text.secondary" }}>
+                    Origen (fijo)
+                  </Typography>
                   <TextField
-                    {...params}
-                    label="Dirección de origen"
-                    placeholder="Selecciona una dirección"
+                    fullWidth
+                    value="Santiago, Chile"
+                    disabled
+                    size="small"
                   />
-                )}
-              />
+                </Box>
 
-              <TextField
-                label="Peso (kg)"
-                type="number"
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                inputProps={{ step: "0.1", min: "0.1" }}
-              />
-
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
-                <TextField
-                  label="Alto (cm)"
-                  type="number"
-                  value={height}
-                  onChange={(e) => setHeight(e.target.value)}
+                <Autocomplete
+                  options={addressOptions}
+                  getOptionLabel={(opt) => opt.label}
+                  value={
+                    selectedAddress
+                      ? {
+                          label: labelOfAddress(selectedAddress),
+                          value: selectedAddress,
+                        }
+                      : null
+                  }
+                  onChange={(_, newValue) =>
+                    setSelectedAddress(newValue?.value || null)
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Dirección de destino"
+                      placeholder="Selecciona a donde enviar"
+                    />
+                  )}
                 />
+
                 <TextField
-                  label="Ancho (cm)"
+                  fullWidth
+                  label="Peso (kg)"
                   type="number"
-                  value={width}
-                  onChange={(e) => setWidth(e.target.value)}
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  inputProps={{ step: "0.1", min: "0.1" }}
                 />
-              </Box>
 
-              <TextField
-                label="Largo (cm)"
-                type="number"
-                value={length}
-                onChange={(e) => setLength(e.target.value)}
-              />
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+                  <TextField
+                    label="Alto (cm)"
+                    type="number"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                  />
+                  <TextField
+                    label="Ancho (cm)"
+                    type="number"
+                    value={width}
+                    onChange={(e) => setWidth(e.target.value)}
+                  />
+                </Box>
 
-              <TextField
-                label="Valor declarado (CLP)"
-                type="number"
-                value={declaredWorth}
-                onChange={(e) => setDeclaredWorth(e.target.value)}
-              />
+                <TextField
+                  fullWidth
+                  label="Largo (cm)"
+                  type="number"
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                />
 
-              <Button
-                variant="contained"
-                onClick={handleQuote}
-                disabled={loading}
-                sx={{ mt: 2 }}
-              >
-                {loading ? (
-                  <CircularProgress size={24} />
-                ) : (
-                  "Calcular cotización"
-                )}
-              </Button>
-            </Stack>
+                <TextField
+                  fullWidth
+                  label="Valor declarado (CLP)"
+                  type="number"
+                  value={declaredWorth}
+                  onChange={(e) => setDeclaredWorth(e.target.value)}
+                />
+
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleQuote}
+                  disabled={loading}
+                  sx={{ mt: 1 }}
+                >
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    "Calcular cotización"
+                  )}
+                </Button>
+              </Stack>
+            </Box>
           </Grid>
 
           {/* Columna derecha: Resultados */}
