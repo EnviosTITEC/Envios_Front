@@ -15,8 +15,6 @@ import {
   Alert,
   CircularProgress,
   Autocomplete,
-  RadioGroup,
-  FormControlLabel,
 } from "@mui/material";
 
 import PageCard from "../../components/ui/layout/PageCard";
@@ -38,7 +36,6 @@ export default function Quote() {
   const [width, setWidth] = useState<string>("");
   const [length, setLength] = useState<string>("");
   const [declaredWorth, setDeclaredWorth] = useState<string>("");
-  const [deliverySpeed, setDeliverySpeed] = useState<"STANDARD" | "EXPRESS">("STANDARD");
   const [quotes, setQuotes] = useState<QuoteOption[]>([]);
   const [selectedQuote, setSelectedQuote] = useState<QuoteOption | null>(null);
   const [loading, setLoading] = useState(false);
@@ -98,7 +95,7 @@ export default function Quote() {
         productType: 1,
         contentType: 1,
         declaredWorth: declaredWorth,
-        deliveryTime: deliverySpeed === "EXPRESS" ? 2 : 1,
+        deliveryTime: 1, // Por defecto estándar, el usuario elige en las opciones
       };
 
       // Llama al servicio
@@ -131,7 +128,7 @@ export default function Quote() {
           length: length,
         },
         meta: {
-          speed: deliverySpeed,
+          speed: selectedQuote?.serviceName || "STANDARD",
           carrier: "CHILEXPRESS",
           declaredWorth: declaredWorth,
         },
@@ -244,29 +241,6 @@ export default function Quote() {
                 onChange={(e) => setDeclaredWorth(e.target.value)}
               />
 
-              <Box>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                  Velocidad de entrega
-                </Typography>
-                <RadioGroup
-                  value={deliverySpeed}
-                  onChange={(e) =>
-                    setDeliverySpeed(e.target.value as "STANDARD" | "EXPRESS")
-                  }
-                >
-                  <FormControlLabel
-                    value="STANDARD"
-                    control={<Radio size="small" />}
-                    label="Estándar (5-7 días)"
-                  />
-                  <FormControlLabel
-                    value="EXPRESS"
-                    control={<Radio size="small" />}
-                    label="Express (1-2 días)"
-                  />
-                </RadioGroup>
-              </Box>
-
               <Button
                 variant="contained"
                 onClick={handleQuote}
@@ -310,49 +284,51 @@ export default function Quote() {
                   <Card
                     key={idx}
                     sx={{
-                      p: 1.5,
+                      p: 2,
                       cursor: "pointer",
-                      border: SUBTLE_BORDER,
+                      border: "2px solid",
                       borderColor:
                         selectedQuote?.serviceCode === quote.serviceCode
                           ? "primary.main"
-                          : "divider",
+                          : "#e0e0e0",
                       backgroundColor:
                         selectedQuote?.serviceCode === quote.serviceCode
                           ? "rgba(25, 103, 210, 0.08)"
                           : "background.paper",
-                      transition: "all 0.2s",
+                      transition: "all 0.25s ease",
+                      borderRadius: RADIUS,
                       "&:hover": {
                         borderColor: "primary.main",
-                        boxShadow: 1,
+                        boxShadow: "0 4px 12px rgba(25, 103, 210, 0.15)",
+                        transform: "translateY(-2px)",
                       },
                     }}
                     onClick={() => setSelectedQuote(quote)}
                   >
-                    <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                    <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
                       <Radio
                         checked={
                           selectedQuote?.serviceCode === quote.serviceCode
                         }
                         size="small"
-                        sx={{ mt: 0.5 }}
+                        sx={{ mt: 0.5, flexShrink: 0 }}
                       />
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
                           {quote.serviceName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {quote.etaDescription}
                         </Typography>
                       </Box>
-                      <Box sx={{ textAlign: "right" }}>
+                      <Box sx={{ textAlign: "right", flexShrink: 0 }}>
                         <Typography
                           variant="subtitle2"
-                          sx={{ fontWeight: 600, color: "success.main" }}
+                          sx={{ fontWeight: 700, color: "success.main", fontSize: "1.1rem" }}
                         >
                           ${quote.price.toLocaleString("es-CL")}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
                           {quote.currency}
                         </Typography>
                       </Box>
