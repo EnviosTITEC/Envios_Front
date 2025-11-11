@@ -16,6 +16,7 @@ import {
   CircularProgress,
   Autocomplete,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 import PageCard from "../../components/ui/layout/PageCard";
 import SectionHeader from "../../components/ui/layout/SectionHeader";
@@ -211,28 +212,41 @@ export default function Quote() {
                   <Typography variant="caption" sx={{ display: "block", mb: 0.4, fontWeight: 500, color: "text.secondary" }}>
                     Dirección de destino
                   </Typography>
-                  <Autocomplete
-                    options={addressOptions}
-                    getOptionLabel={(opt) => opt.label}
-                    value={
-                      selectedAddress
-                        ? {
-                            label: labelOfAddress(selectedAddress),
-                            value: selectedAddress,
-                          }
-                        : null
-                    }
-                    onChange={(_, newValue) =>
-                      setSelectedAddress(newValue?.value || null)
-                    }
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        placeholder="Selecciona a donde enviar"
-                        size="small"
-                      />
-                    )}
-                  />
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+                    <Autocomplete
+                      fullWidth
+                      options={addressOptions}
+                      getOptionLabel={(opt) => opt.label}
+                      value={
+                        selectedAddress
+                          ? {
+                              label: labelOfAddress(selectedAddress),
+                              value: selectedAddress,
+                            }
+                          : null
+                      }
+                      onChange={(_, newValue) =>
+                        setSelectedAddress(newValue?.value || null)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Selecciona a donde enviar"
+                          size="small"
+                        />
+                      )}
+                    />
+                    <Button
+                      onClick={() => {/* TODO: abrir modal de agregar dirección */}}
+                      startIcon={<AddIcon />}
+                      color="primary"
+                      variant="contained"
+                      size="small"
+                      sx={{ borderRadius: "8px", flexShrink: 0 }}
+                    >
+                      Agregar
+                    </Button>
+                  </Box>
                 </Box>
 
                 <TextField
