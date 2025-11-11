@@ -172,10 +172,10 @@ export default function Quote() {
           </Alert>
         )}
 
-        <Grid container spacing={4} sx={{ mt: 1 }}>
+        <Grid container spacing={4} sx={{ mt: 0 }}>
           {/* Columna izquierda: Parámetros */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1.5 }}>
               Parámetros del envío
             </Typography>
 
@@ -183,13 +183,13 @@ export default function Quote() {
               sx={{
                 border: "2px solid #e0e0e0",
                 borderRadius: "8px",
-                p: 2,
+                p: 1.5,
                 backgroundColor: "rgba(0, 0, 0, 0.02)",
               }}
             >
-              <Stack spacing={1.5}>
+              <Stack spacing={1.2}>
                 <Box>
-                  <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 500, color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ display: "block", mb: 0.4, fontWeight: 500, color: "text.secondary" }}>
                     Origen (fijo)
                   </Typography>
                   <TextField
@@ -208,7 +208,7 @@ export default function Quote() {
                 </Box>
 
                 <Box>
-                  <Typography variant="caption" sx={{ display: "block", mb: 0.5, fontWeight: 500, color: "text.secondary" }}>
+                  <Typography variant="caption" sx={{ display: "block", mb: 0.4, fontWeight: 500, color: "text.secondary" }}>
                     Dirección de destino
                   </Typography>
                   <Autocomplete
@@ -243,15 +243,17 @@ export default function Quote() {
                   onChange={(e) => setWeight(e.target.value)}
                   inputProps={{ step: "0.1", min: "0.1" }}
                   size="small"
+                  sx={{ "& input": { textAlign: "left" } }}
                 />
 
-                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0.8 }}>
                   <TextField
                     label="Alto (cm)"
                     type="number"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                     size="small"
+                    sx={{ "& input": { textAlign: "left" } }}
                   />
                   <TextField
                     label="Ancho (cm)"
@@ -259,6 +261,7 @@ export default function Quote() {
                     value={width}
                     onChange={(e) => setWidth(e.target.value)}
                     size="small"
+                    sx={{ "& input": { textAlign: "left" } }}
                   />
                 </Box>
 
@@ -269,6 +272,7 @@ export default function Quote() {
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
                   size="small"
+                  sx={{ "& input": { textAlign: "left" } }}
                 />
 
                 <TextField
@@ -278,6 +282,7 @@ export default function Quote() {
                   value={declaredWorth}
                   onChange={(e) => setDeclaredWorth(e.target.value)}
                   size="small"
+                  sx={{ "& input": { textAlign: "left" } }}
                 />
 
                 <Button
@@ -285,7 +290,7 @@ export default function Quote() {
                   fullWidth
                   onClick={handleQuote}
                   disabled={loading}
-                  sx={{ mt: 0.5 }}
+                  sx={{ mt: 0.3 }}
                   size="small"
                 >
                   {loading ? (
@@ -300,7 +305,7 @@ export default function Quote() {
 
           {/* Columna derecha: Resultados */}
           <Grid item xs={12} md={6}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
+            <Typography variant="h6" sx={{ mb: 1.5 }}>
               Opciones disponibles
             </Typography>
 
