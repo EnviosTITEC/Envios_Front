@@ -1,3 +1,4 @@
+//src/types/address.ts
 export interface AddressRow {
   id: number | string;
   street: string;
