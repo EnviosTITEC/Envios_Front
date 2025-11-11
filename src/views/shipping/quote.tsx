@@ -173,7 +173,7 @@ export default function Quote() {
           </Alert>
         )}
 
-        <Grid container spacing={3} sx={{ mt: 1 }}>
+        <Grid container spacing={4} sx={{ mt: 1 }}>
           {/* Columna izquierda: Parámetros */}
           <Grid item xs={12} md={6}>
             <Typography variant="h6" sx={{ mb: 2 }}>
@@ -183,7 +183,7 @@ export default function Quote() {
             <Box
               sx={{
                 border: "2px solid #e0e0e0",
-                borderRadius: RADIUS,
+                borderRadius: "4px",
                 p: 2.5,
                 backgroundColor: "rgba(0, 0, 0, 0.02)",
               }}
@@ -198,6 +198,7 @@ export default function Quote() {
                     value="Santiago, Chile"
                     disabled
                     size="small"
+                    sx={{ "& .MuiInputBase-input": { overflow: "hidden", textOverflow: "ellipsis" } }}
                   />
                 </Box>
 
@@ -292,7 +293,7 @@ export default function Quote() {
                 sx={{
                   p: 3,
                   textAlign: "center",
-                  borderRadius: RADIUS,
+                  borderRadius: "4px",
                   border: SUBTLE_BORDER,
                   backgroundColor: "action.hover",
                 }}
@@ -312,6 +313,7 @@ export default function Quote() {
                       p: 2,
                       cursor: "pointer",
                       border: "2px solid",
+                      borderRadius: "4px",
                       borderColor:
                         selectedQuote?.serviceCode === quote.serviceCode
                           ? "primary.main"
@@ -321,7 +323,6 @@ export default function Quote() {
                           ? "rgba(25, 103, 210, 0.08)"
                           : "background.paper",
                       transition: "all 0.25s ease",
-                      borderRadius: RADIUS,
                       "&:hover": {
                         borderColor: "primary.main",
                         boxShadow: "0 4px 12px rgba(25, 103, 210, 0.15)",
