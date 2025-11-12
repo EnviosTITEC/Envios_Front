@@ -1,4 +1,4 @@
-// src/components/ui/feedback/ModeView.tsx
+// src/components/common/feedback/ModeView.tsx
 import { useMemo, useState, useEffect } from "react";
 import { ThemeProvider, CssBaseline, Fab, Tooltip } from "@mui/material";
 import { createTheme, type ThemeOptions, PaletteMode } from "@mui/material/styles";

@@ -1,7 +1,7 @@
 import { InputBase } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
-export const InputPassWord = styled(InputBase)(({ theme }) => ({
+export const InputPassword = styled(InputBase)(({ theme }) => ({
   "label + &": {
     marginTop: theme.spacing(3),
   },
@@ -17,4 +17,7 @@ export const InputPassWord = styled(InputBase)(({ theme }) => ({
   justifyContent: "space-between",
 }));
 
-export default InputPassWord;
+// Alias para compatibilidad
+export const InputPassWord = InputPassword;
+
+export default InputPassword;

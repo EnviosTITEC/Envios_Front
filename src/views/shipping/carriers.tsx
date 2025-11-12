@@ -7,8 +7,8 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
-import PageCard from "../../components/ui/layout/PageCard";
-import SectionHeader from "../../components/ui/layout/SectionHeader";
+import PageCard from "../../components/primitives/PageCard";
+import SectionHeader from "../../components/primitives/SectionHeader";
 
 export default function Carriers() {
   return (

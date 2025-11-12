@@ -7,13 +7,13 @@ import {
   Link,
 } from "@mui/material";
 import useWindowDimensions from "../../scripts/useWindowDimensions";
-import InputLogin from "../../components/mui/InputLogin";
+import InputLogin from "../../components/common/inputs/InputLogin";
 import { useState } from "react";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import InputPassWord from "../../components/mui/InputPassWord";
+import { InputPassWord } from "../../components/common/inputs/InputPassword";
 import logo from "../../assets/EII_logo2.svg";
-import imagenlogin from "../../assets/login/default.png";
+// import imagenlogin from "../../assets/login/default.png";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -148,11 +148,11 @@ function Login() {
         </Box>
       </div>
       <div className="justify-center items-center bg-gray-100 h-full w-[50%] hidden lg:flex">
-        <img
+        {/* <img
           src={imagenlogin}
           alt="Imagen GPI"
           className="object-cover h-full w-full "
-        />
+        /> */}
       </div>
     </div>
   );

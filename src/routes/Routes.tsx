@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { Navigate } from "react-router-dom";
 import Loadable from "./Loadable";
-import Spinner from "../components/spinner/Spinner";
+import { Spinner } from "../components";
 
 /* ---------------- Layouts ---------------- */
 const BlankLayout = Loadable(lazy(() => import("../layouts/blank-layout/BlankLayout")));
@@ -18,8 +18,8 @@ const ResetPass = Loadable(lazy(() => import("../views/authentication/ResetPass"
 
 /* ---------------- Shipping module ---------------- */
 const ShippingHome = Loadable(lazy(() => import("../views/shipping/shipping")));
-const Addresses = Loadable(lazy(() => import("../views/shipping/addresses")));
-const Quote = Loadable(lazy(() => import("../views/shipping/quote")));
+const Addresses = Loadable(lazy(() => import("../views/shipping/addressesView/AddressesPage")));
+const Quote = Loadable(lazy(() => import("../views/shipping/quoteView/QuotePage")));
 const Shipments = Loadable(lazy(() => import("../views/shipping/shipments")));
 const Tracking = Loadable(lazy(() => import("../views/shipping/tracking")));
 const Carriers = Loadable(lazy(() => import("../views/shipping/carriers")));

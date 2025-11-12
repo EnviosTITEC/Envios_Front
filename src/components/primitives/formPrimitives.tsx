@@ -134,7 +134,8 @@ export const inputAutoSx = (theme: any) => ({
   /* ===== Estado DESHABILITADO (borde punteado rectangular) ===== */
   "& .MuiInputBase-root.Mui-disabled": {
     paddingRight: 12,                                 // sin adornos
-    backgroundColor: theme.palette.background.paper,  // evita “pill”
+    backgroundColor: theme.palette.background.paper,  // evita "pill"
+    borderRadius: `${RADIUS}px !important`,
   },
   // oculta adornos cuando está deshabilitado
   "& .MuiInputBase-root.Mui-disabled .MuiAutocomplete-endAdornment": {
@@ -143,8 +144,9 @@ export const inputAutoSx = (theme: any) => ({
   // borde punteado en todo el fieldset
   "& .MuiInputBase-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
     borderStyle: "dashed",
-    borderColor: alpha(theme.palette.text.primary, 0.4),
+    borderColor: alpha(theme.palette.text.primary, 0.28),
     borderRadius: `${RADIUS}px !important`,
+    borderWidth: "1px !important",
   },
   // quita el notch visual
   "& .MuiInputBase-root.Mui-disabled .MuiOutlinedInput-notchedOutline legend": {
@@ -157,7 +159,7 @@ export const inputAutoSx = (theme: any) => ({
 });
 
 
-/** Dropdown del Autocomplete – compacto y sin “pill” */
+/** Dropdown del Autocomplete – compacto y sin "pill" */
 export const autoPaperSx = (theme: any) => ({
   borderRadius: "8px !important",
   boxShadow: "0 12px 28px rgba(0,0,0,.12)",
@@ -202,33 +204,39 @@ export const autoPaperSx = (theme: any) => ({
 export const autoIndicatorSlots = {
   popupIndicator: {
     sx: {
-      p: 0,
+      p: "6px 8px",
       mr: 0.75,
       bgcolor: "transparent",
-      boxShadow: "none",
+      border: `1px solid`,
+      borderColor: (t: any) => t.palette.divider,
       borderRadius: 0,
+  boxShadow: "0 6px 6px rgba(15,23,42,.08)",
       "& .MuiSvgIcon-root": {
         fontSize: 18,
       },
       "&:hover": {
-        bgcolor: "transparent",
-        color: "primary.main",
+        bgcolor: (t: any) => t.palette.action.hover,
+        borderColor: (t: any) => t.palette.primary.main,
+  boxShadow: "0 8px 10px rgba(15,23,42,.14)",
       },
     },
   },
   clearIndicator: {
     sx: {
-      p: 0,
+      p: "6px 8px",
       mr: 0.25,
       bgcolor: "transparent",
-      boxShadow: "none",
+      border: `1px solid`,
+      borderColor: (t: any) => t.palette.divider,
       borderRadius: 0,
+  boxShadow: "0 6px 6px rgba(15,23,42,.08)",
       "& .MuiSvgIcon-root": {
         fontSize: 18,
       },
       "&:hover": {
-        bgcolor: "transparent",
-        color: "primary.main",
+        bgcolor: (t: any) => t.palette.action.hover,
+        borderColor: (t: any) => t.palette.primary.main,
+  boxShadow: "0 8px 10px rgba(15,23,42,.14)",
       },
     },
   },

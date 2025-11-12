@@ -1,4 +1,4 @@
-// src/ui/SectionHeader.tsx
+// src/components/primitives/SectionHeader.tsx
 import { Box, Typography, Stack } from "@mui/material";
 
 type Props = {

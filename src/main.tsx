@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 
 import App from "./App";
-import Spinner from "./components/spinner/Spinner";
+import { Spinner } from "./components";
 import "./index.css";
 
 // Fuentes

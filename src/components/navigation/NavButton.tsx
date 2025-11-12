@@ -1,12 +1,12 @@
-// src/ui/NavButton.tsx
+// src/components/navigation/NavButton.tsx
 import * as React from "react";
 import { Button, ButtonProps } from "@mui/material";
 import { Link as RouterLink, LinkProps as RouterLinkProps } from "react-router-dom";
 
 /**
- * NavButton: botón de navegación estilo “ghost” coherente con el tema PulgaShop.
- * - Usa el color primario del theme.
- * - Ideal para navegación interna tipo “Volver” o enlaces de toolbar.
+ * NavButton: botón de navegación estilo "fantasma"
+ * - Permite usar `to="/ruta"` con RouterLink sin errores de tipo.
+ * - Ideal para enlaces tipo "Volver a…" o navegación interna.
  */
 type NavButtonProps = ButtonProps & {
   to?: RouterLinkProps["to"];
@@ -24,20 +24,16 @@ const NavButton = React.forwardRef<HTMLButtonElement, NavButtonProps>(
       disableElevation
       {...rest}
       sx={{
-        px: 1.5,
-        minHeight: 28,
-        fontSize: (t) => t.typography.button.fontSize,
+        px: 1,
+        minHeight: 22,
+        fontSize: 13,
         fontWeight: 500,
-        borderRadius: 1.5,
+        borderRadius: 1,
         textTransform: "none",
-        color: (t) => t.palette.primary.main,
+        color: "#5A7F78",
         "&:hover": {
-          color: (t) => t.palette.primary.dark,
+          color: "#314C53",
           backgroundColor: "transparent",
-        },
-        "&:focus-visible": {
-          outline: "none",
-          boxShadow: (t) => `0 0 0 2px ${t.palette.primary.main}33`,
         },
         ...sx,
       }}

@@ -8,11 +8,11 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useState } from "react";
-import InputLogin from "../../components/mui/InputLogin";
-import InputPassWord from "../../components/mui/InputPassWord";
+import InputLogin from "../../components/common/inputs/InputLogin";
+import { InputPassWord } from "../../components/common/inputs/InputPassword";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import imagenregister from "../../assets/login/default.png";
+// import imagenregister from "../../assets/login/default.png";
 import logo from "../../assets/EII_logo2.svg";
 import { useNavigate } from "react-router-dom";
 
@@ -29,7 +29,7 @@ function Register() {
   return (
     <div className="flex flex-row justify-center items-center">
       <div className="hidden lg:flex justify-center items-center w-[40%] xl:w-[40%] 2xl:w-[50%] ">
-        <img
+        {/* <img
           src={imagenregister}
           alt="Imagen GPI"
           className="object-cover h-full w-full"
@@ -37,7 +37,7 @@ function Register() {
             maxHeight: "600px",
             maxWidth: "fit-content",
           }}
-        />
+        /> */}
       </div>
       <div className="flex flex-col items-center justify-center w-full md:w-[100%] lg:w-[60%] xl:w-[60%] 2xl:w-[50%] bg-white overflow-auto py-8 flex-1  min-h-screen">
         <Box

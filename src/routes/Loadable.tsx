@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import Spinner from "../components/spinner/Spinner";
+import { Spinner } from "../components";
 
 /**
  * Envuelve un componente con <Suspense> para carga diferida.

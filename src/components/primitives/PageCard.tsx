@@ -1,4 +1,4 @@
-// src/components/ui/layout/PageCard.tsx
+// src/components/primitives/PageCard.tsx
 import { Card, CardContent } from "@mui/material";
 
 type Props = { children: React.ReactNode; sx?: object };
@@ -17,7 +17,7 @@ export default function PageCard({ children, sx }: Props) {
         border: `1px solid rgba(16,24,40,0.08)`,
         boxShadow: "0 8px 24px rgba(16,24,40,0.06)",
 
-        // 🔒 sin efecto “botón”
+        // 🔒 sin efecto "botón"
         transition: "none !important",
         "&:hover": {
           transform: "none !important",
@@ -29,8 +29,7 @@ export default function PageCard({ children, sx }: Props) {
         ...sx,
       })}
     >
-      {/* más “aire” para que no choque con la tabla */}
-      <CardContent sx={{ px: 3.5, pt: 3.5, pb: 3.5, maxWidth: 1200, mx: "auto" }}>
+      <CardContent sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
         {children}
       </CardContent>
     </Card>

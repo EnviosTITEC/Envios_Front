@@ -6,8 +6,8 @@ import {
   Typography,
 } from "@mui/material";
 
-import PageCard from "../../components/ui/layout/PageCard";
-import SectionHeader from "../../components/ui/layout/SectionHeader";
+import PageCard from "../../components/primitives/PageCard";
+import SectionHeader from "../../components/primitives/SectionHeader";
 
 export default function Tracking() {
   return (

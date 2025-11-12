@@ -8,7 +8,7 @@ import {
   autoPaperSx,
   autoIndicatorSlots,
   RADIUS,
-} from "../ui/formPrimitives";
+} from "../primitives/formPrimitives";
 
 /** Tipos territoriales */
 export type Region = {

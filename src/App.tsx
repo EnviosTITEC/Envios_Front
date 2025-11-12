@@ -1,8 +1,8 @@
 //src/App.tsx
 import { useRoutes } from "react-router-dom";
 import Router from "./routes/Routes";
-import Spinner from "./components/spinner/Spinner";
 import { Suspense } from "react";
+import { Spinner } from "./components/common/loaders";
 
 /**
  * App raíz del proyecto EnviosTITEC / PulgaShop
