@@ -59,6 +59,8 @@ export async function createAddress(userId: string, data: NewAddress): Promise<A
     userId,
   };
 
+  console.log("Enviando payload:", body);
+
   try {
     const res = await fetch(`${API_BASE}/addresses`, {
       method: "POST",
@@ -68,6 +70,8 @@ export async function createAddress(userId: string, data: NewAddress): Promise<A
 
     if (!res.ok) {
       console.warn("createAddress: backend responded", res.status, "- usando localStorage");
+      const errorText = await res.text();
+      console.error("Backend error response:", errorText);
       throw new Error("backend error");
     }
 

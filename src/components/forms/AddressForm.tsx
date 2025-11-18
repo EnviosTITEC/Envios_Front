@@ -12,29 +12,22 @@ import {
 } from "../primitives/formPrimitives";
 
 /** Tipos territoriales */
-// OJO: ahora también llevan `code`, que es el código DPA
+// Chilexpress: Región → Comuna directamente (sin provincias)
 export type Region = {
   name: string;
-  code?: string;
-  provinces?: { name: string; code?: string; communes?: { name: string; code?: string }[] }[];
+  code: string;
+  communes?: { name: string; code: string }[];
 };
 
-export type Province = {
-  name: string;
-  code?: string;
-  communes?: { name: string; code?: string }[];
-};
-
-export type Commune = { name: string; code?: string };
+export type Commune = { name: string; code: string };
 
 /** Shape del form controlado desde Addresses */
 export type AddressFormValue = {
   street: string;
   number: string;
   regionId: string;
-  provinceId: string;
   communeId: string;       // nombre de la comuna
-  communeCode?: string;    // código DPA (13114, etc.)
+  countyCode?: string;     // código Chilexpress (ej: "STGO")
   postalCode?: string;
   references?: string;
 };
@@ -43,31 +36,24 @@ type Props = {
   value: AddressFormValue;
   onChange: (next: AddressFormValue) => void;
 
-  loadingPostal: boolean;
   regions: Region[];
-  provinces: Province[];
   communes: Commune[];
   onSelectRegion: (_: any, r: Region | null) => void;
-  onSelectProvince: (_: any, p: Province | null) => void;
   onSelectCommune: (_: any, c: Commune | null) => void;
 };
 
 export default function AddressForm({
   value,
   onChange,
-  loadingPostal,
   regions,
-  provinces,
   communes,
   onSelectRegion,
-  onSelectProvince,
   onSelectCommune,
 }: Props) {
   const theme = useTheme();
   const refsLen = value.references?.length ?? 0;
 
-  const provinceDisabled = !value.regionId;
-  const communeDisabled = !value.provinceId;
+  const communeDisabled = !value.regionId;
 
   return (
     <Box>
@@ -78,10 +64,10 @@ export default function AddressForm({
             <FieldLabel>Región *</FieldLabel>
             <Autocomplete<Region>
               options={regions}
-              loading={loadingPostal}
               autoHighlight
               isOptionEqualToValue={(o, v) => o.name === v.name}
               getOptionLabel={(opt) => opt?.name ?? ""}
+              getOptionKey={(option) => option.code}
               value={regions.find((r) => r.name === value.regionId) ?? null}
               onChange={(e, r) => {
                 // avisamos al hook
@@ -90,9 +76,8 @@ export default function AddressForm({
                 onChange({
                   ...value,
                   regionId: r?.name ?? "",
-                  provinceId: "",
                   communeId: "",
-                  communeCode: undefined,
+                  countyCode: undefined,
                 });
               }}
               slotProps={{
@@ -113,48 +98,6 @@ export default function AddressForm({
           </FieldCard>
         </Grid>
 
-        {/* Provincia */}
-        <Grid item xs={12} sm={6}>
-          <FieldCard>
-            <FieldLabel sx={{ color: provinceDisabled ? "text.disabled" : undefined }}>
-              Provincia *
-            </FieldLabel>
-            <Autocomplete<Province>
-              options={provinces}
-              autoHighlight
-              disabled={provinceDisabled}
-              isOptionEqualToValue={(o, v) => o.name === v.name}
-              getOptionLabel={(opt) => opt?.name ?? ""}
-              value={provinces.find((p) => p.name === value.provinceId) ?? null}
-              onChange={(e, p) => {
-                onSelectProvince(e, p);
-                onChange({
-                  ...value,
-                  provinceId: p?.name ?? "",
-                  communeId: "",
-                  communeCode: undefined,
-                });
-              }}
-              slotProps={{
-                popper: { sx: { zIndex: 1500 } },
-                paper: { sx: autoPaperSx(theme) },
-                popupIndicator: autoIndicatorSlots.popupIndicator,
-                clearIndicator: autoIndicatorSlots.clearIndicator,
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder={
-                    value.regionId ? "Seleccionar provincia" : "Selecciona una región"
-                  }
-                  size="small"
-                  sx={inputAutoSx(theme)}
-                />
-              )}
-            />
-          </FieldCard>
-        </Grid>
-
         {/* Comuna */}
         <Grid item xs={12} sm={6}>
           <FieldCard>
@@ -165,17 +108,18 @@ export default function AddressForm({
               options={communes}
               autoHighlight
               disabled={communeDisabled}
-              isOptionEqualToValue={(o, v) => o.name === v.name}
+              isOptionEqualToValue={(o, v) => o.code === v.code}
               getOptionLabel={(opt) => opt?.name ?? ""}
-              value={communes.find((c) => c.name === value.communeId) ?? null}
+              getOptionKey={(option) => option.code}
+              value={communes.find((c) => c.code === value.countyCode) ?? null}
               onChange={(e, c) => {
                 // avisamos al hook (para postal)
                 onSelectCommune(e, c);
-                // y actualizamos **nombre** + **código DPA**
+                // y actualizamos **nombre** + **código Chilexpress**
                 onChange({
                   ...value,
                   communeId: c?.name ?? "",
-                  communeCode: c?.code, // 👈 AQUÍ guardamos el código
+                  countyCode: c?.code, // 👈 AQUÍ guardamos el código Chilexpress
                 });
               }}
               slotProps={{
@@ -187,9 +131,7 @@ export default function AddressForm({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  placeholder={
-                    value.provinceId ? "Seleccionar comuna" : "Selecciona una provincia"
-                  }
+                  placeholder="Seleccionar comuna"
                   size="small"
                   sx={inputAutoSx(theme)}
                 />

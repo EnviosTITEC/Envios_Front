@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Box, Button, Card, Typography } from "@mui/material";
+import { Box, Button, Card } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import PageCard from "../../../components/primitives/PageCard";
 import SectionHeader from "../../../components/primitives/SectionHeader";
@@ -8,23 +8,15 @@ import AddressModal from "./AddressModal";
 import DetailDialog from "./DetailDialog";
 import DeleteDialog from "./DeleteDialog";
 import { useAddressesCrud } from "./hooks/useAddressesCrud";
-import { getRegionsWithProvincesAndCommunes, type PostalRegion, type PostalProvince, type PostalCommune } from "../../../db/config/postal.service";
+import { useChilexpress } from "../quoteView/hooks/useChilexpress";
 import { useEffect } from "react";
 import type { AddressRow, NewAddress } from "../../../types/address";
-import type { AddressFormValue, Region, Province, Commune } from "../../../components/forms/AddressForm";
-
-const mapPostal = (data: PostalRegion[]): Region[] =>
-  data.map((r) => ({
-    name: r.name,
-    provinces: r.provinces?.map((p: PostalProvince) => ({
-      name: p.name,
-      communes: p.communes?.map((c: PostalCommune) => ({ name: c.name })) ?? [],
-    })) ?? [],
-  }));
+import type { AddressFormValue, Region, Commune } from "../../../components/forms/AddressForm";
 
 export default function AddressesPage() {
   const userId = "1"; // sustituir por auth real
   const { items, loading, add, edit, remove } = useAddressesCrud(userId);
+  const { regions: chilexpressRegions, loadCoverageAreas } = useChilexpress();
 
   // UI state
   const [openForm, setOpenForm] = useState(false);
@@ -36,27 +28,50 @@ export default function AddressesPage() {
 
   // form + cascada
   const [regions, setRegions] = useState<Region[]>([]);
-  const [provinces, setProvinces] = useState<Province[]>([]);
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [form, setForm] = useState<AddressFormValue>({
-    street:"", number:"", regionId:"", provinceId:"", communeId:"", postalCode:"", references:""
+    street:"", number:"", regionId:"", communeId:"", postalCode:"", references:""
   });
 
+  // Transformar datos de Chilexpress a estructura de Region/Commune (sin provincias)
   useEffect(() => {
+    if (chilexpressRegions.length === 0) return;
+    
     (async () => {
-      const data = await getRegionsWithProvincesAndCommunes();
-      setRegions(mapPostal(data));
+      const mappedRegions: Region[] = [];
+      
+      for (const region of chilexpressRegions) {
+        const regionId = (region as any).regionId;
+        const areas = await loadCoverageAreas(regionId);
+        
+        // Deduplicar: mantener el PRIMERO por nombre (para UX)
+        const uniqueByName = Array.from(
+          new Map(areas.map(a => [a.countyName, a])).values()
+        );
+        
+        console.log(`Region ${regionId}: ${areas.length} areas brutos -> ${uniqueByName.length} unicos por nombre`);
+        
+        mappedRegions.push({
+          name: (region as any).regionName,
+          code: regionId,
+          communes: uniqueByName.map(area => ({
+            name: area.countyName,
+            code: area.countyCode,
+          })),
+        });
+      }
+      setRegions(mappedRegions);
     })();
-  }, []);
+  }, [chilexpressRegions]);
 
   const requiredOK = useMemo(() =>
-    form.regionId && form.provinceId && form.communeId && form.street && form.number,
+    form.regionId && form.communeId && form.street && form.number,
   [form]);
 
   function onOpenCreate() {
     setMode("create"); setCurrentId(null);
-    setForm({ street:"", number:"", regionId:"", provinceId:"", communeId:"", postalCode:"", references:"" });
-    setProvinces([]); setCommunes([]);
+    setForm({ street:"", number:"", regionId:"", communeId:"", postalCode:"", references:"" });
+    setCommunes([]);
     setOpenForm(true);
   }
 
@@ -65,21 +80,19 @@ export default function AddressesPage() {
     const rid = (row as any)._id ?? (row as any).id;
     setCurrentId(rid);
     const region = (row as any).regionId ?? (row as any).region ?? "";
-    const province = (row as any).provinceId ?? (row as any).province ?? "";
-    const commune = (row as any).communeId ?? (row as any).comune ?? "";
+    const countyCode = (row as any).countyCode ?? "";
+    const communeName = (row as any).communeId ?? (row as any).commune ?? (row as any).comuna ?? "";
     setForm({
       street: row.street ?? "",
       number: row.number ?? "",
       regionId: region,
-      provinceId: province,
-      communeId: commune,
+      communeId: communeName,
+      countyCode: countyCode,
       postalCode: (row as any).postalCode ?? (row as any).postal_code ?? "",
       references: row.references ?? "",
     });
     const rMatch = regions.find(r => r.name === region) || null;
-    setProvinces(rMatch?.provinces ?? []);
-    const pMatch = rMatch?.provinces?.find(p => p.name === province) || null;
-    setCommunes(pMatch?.communes ?? []);
+    setCommunes(rMatch?.communes ?? []);
     setOpenForm(true);
   }
 
@@ -95,9 +108,13 @@ export default function AddressesPage() {
 
   async function onSave() {
     const payload: NewAddress = {
-      street: form.street, number: form.number,
-      regionId: form.regionId, provinceId: form.provinceId, communeId: form.communeId,
-      postalCode: form.postalCode || "", references: form.references || "",
+      street: form.street,
+      number: form.number,
+      regionId: form.regionId,
+      communeId: form.communeId,
+      countyCode: form.countyCode, // Código Chilexpress
+      postalCode: form.postalCode || "",
+      references: form.references || "",
     };
     if (mode === "create") await add(payload);
     else if (currentId != null) await edit(currentId, payload);
@@ -105,7 +122,7 @@ export default function AddressesPage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 2, md: 0 }, py: 1 }}>
+    <Box sx={{ px: { xs: 2, md: 0 }, py: 1, mb: 12 }}>
       <PageCard>
         <SectionHeader
           title="Mis direcciones"
@@ -118,7 +135,6 @@ export default function AddressesPage() {
         />
 
         <Card variant="outlined" sx={{ p: 2, mt: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>Lista</Typography>
           <AddressTable
             rows={items}
             loading={loading}
@@ -138,10 +154,11 @@ export default function AddressesPage() {
         onSave={onSave}
         disabledSave={!requiredOK}
         regions={regions}
-        provinces={provinces}
         communes={communes}
-        onSelectRegion={(_, v) => { setForm(f => ({...f, regionId: v?.name ?? "", provinceId:"", communeId:""})); setProvinces(v?.provinces ?? []); setCommunes([]); }}
-        onSelectProvince={(_, v) => { setForm(f => ({...f, provinceId: v?.name ?? "", communeId:""})); setCommunes(v?.communes ?? []); }}
+        onSelectRegion={(_, v) => { 
+          setForm(f => ({...f, regionId: v?.name ?? "", communeId:""})); 
+          setCommunes(v?.communes ?? []); 
+        }}
         onSelectCommune={(_, v) => { setForm(f => ({...f, communeId: v?.name ?? ""})); }}
       />
 

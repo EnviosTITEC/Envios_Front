@@ -7,7 +7,7 @@
 export interface ChilexpressRegion {
   regionId: string;
   regionName: string;
-  regionCode: string;
+  ineRegionCode?: number;
 }
 
 export interface ChilexpressCoverageArea {
@@ -107,13 +107,13 @@ export async function findChilexpressCountyByName(
 ): Promise<{
   countyCode: string;
   countyName: string;
-  regionCode: string;
+  regionId: string;
 } | null> {
   try {
     const regions = await getChilexpressRegions();
 
     for (const region of regions) {
-      const areas = await getChilexpressCoverageAreas(region.regionCode);
+      const areas = await getChilexpressCoverageAreas(region.regionId);
 
       const found = areas.find(
         (area) =>
@@ -127,7 +127,7 @@ export async function findChilexpressCountyByName(
         return {
           countyCode: found.countyCode,
           countyName: found.countyName,
-          regionCode: region.regionCode,
+          regionId: region.regionId,
         };
       }
     }

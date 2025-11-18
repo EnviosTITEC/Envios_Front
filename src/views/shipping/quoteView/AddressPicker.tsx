@@ -24,39 +24,42 @@ export default function AddressPicker(props: {
           slotProps={{
             popupIndicator: {
               sx: {
-                p: "6px 8px",
-                mr: 0.75,
+                p: 0,
+                mr: 0.5,
                 bgcolor: "transparent",
-                border: `1px solid`,
-                borderColor: (t: any) => t.palette.divider,
+                border: "none",
                 borderRadius: 0,
-                boxShadow: "0 6px 6px rgba(15,23,42,.08)",
                 "& .MuiSvgIcon-root": {
-                  fontSize: 18,
+                  fontSize: 25,
+                  color: (t: any) => t.palette.text.secondary,
+                  transition: "color 0.2s ease",
+                },
+                "&:hover .MuiSvgIcon-root": {
+                  color: (t: any) => t.palette.primary.main,
                 },
                 "&:hover": {
-                  bgcolor: (t: any) => t.palette.action.hover,
-                  borderColor: (t: any) => t.palette.primary.main,
-                  boxShadow: "0 8px 10px rgba(15,23,42,.14)",
+                  bgcolor: "transparent",
+                  borderColor: "transparent",
                 },
               },
             },
             clearIndicator: {
               sx: {
-                p: "6px 8px",
-                mr: 0.25,
+                p: 0,
+                mr: 0.5,
                 bgcolor: "transparent",
-                border: `1px solid`,
-                borderColor: (t: any) => t.palette.divider,
+                border: "none",
                 borderRadius: 0,
-                boxShadow: "0 6px 6px rgba(15,23,42,.08)",
                 "& .MuiSvgIcon-root": {
                   fontSize: 18,
+                  transition: "color 0.2s ease",
+                },
+                "&:hover .MuiSvgIcon-root": {
+                  color: (t: any) => t.palette.primary.main,
                 },
                 "&:hover": {
-                  bgcolor: (t: any) => t.palette.action.hover,
-                  borderColor: (t: any) => t.palette.primary.main,
-                  boxShadow: "0 8px 10px rgba(15,23,42,.14)",
+                  bgcolor: "transparent",
+                  borderColor: "transparent",
                 },
               },
             },

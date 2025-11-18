@@ -6,7 +6,7 @@ import {
   Button,
 } from "@mui/material";
 import AddressForm from "../../../components/forms/AddressForm";
-import type { AddressFormValue, Region, Province, Commune } from "../../../components/forms/AddressForm";
+import type { AddressFormValue, Region, Commune } from "../../../components/forms/AddressForm";
 
 interface AddressModalProps {
   open: boolean;
@@ -14,12 +14,9 @@ interface AddressModalProps {
   onSave: () => void;
   value: AddressFormValue;
   onChange: (v: AddressFormValue) => void;
-  loadingPostal: boolean;
   regions: Region[];
-  provinces: Province[];
   communes: Commune[];
   onSelectRegion: (region: Region | null) => void;
-  onSelectProvince: (province: Province | null) => void;
   onSelectCommune: (commune: Commune | null) => void;
 }
 
@@ -29,12 +26,9 @@ export default function AddressModal({
   onSave,
   value,
   onChange,
-  loadingPostal,
   regions,
-  provinces,
   communes,
   onSelectRegion,
-  onSelectProvince,
   onSelectCommune,
 }: AddressModalProps) {
   return (
@@ -44,12 +38,9 @@ export default function AddressModal({
         <AddressForm
           value={value}
           onChange={onChange}
-          loadingPostal={loadingPostal}
           regions={regions}
-          provinces={provinces}
           communes={communes}
           onSelectRegion={(_, v) => onSelectRegion(v)}
-          onSelectProvince={(_, v) => onSelectProvince(v)}
           onSelectCommune={(_, v) => onSelectCommune(v)}
         />
       </DialogContent>

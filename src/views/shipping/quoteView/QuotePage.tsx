@@ -1,5 +1,5 @@
 // src/views/shipping/Quote/QuotePage.tsx
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Box,
   Grid,
@@ -14,7 +14,6 @@ import PageCard from "../../../components/primitives/PageCard";
 import SectionHeader from "../../../components/primitives/SectionHeader";
 
 import { useAddresses } from "./hooks/useAddresses";
-import { useAddressModal } from "./hooks/useAddressModal";
 import { useQuote } from "./hooks/useQuote";
 import { useChilexpress } from "./hooks/useChilexpress";
 
@@ -34,7 +33,6 @@ type AddressFormValue = {
   street: string;
   number: string;
   regionId: string;
-  provinceId: string;
   communeId: string;        // nombre de la comuna
   countyCode?: string;       // código Chilexpress (ej: "STGO")
   postalCode?: string;
@@ -53,16 +51,6 @@ export default function QuotePage() {
   // data
   const { items: addresses, addAddress } = useAddresses(userId);
   const {
-    regions,
-    provinces,
-    communes,
-    loading: loadingPostal,
-    handleSelectRegion: hookSelectRegion,
-    handleSelectProvince: hookSelectProvince,
-    handleSelectCommune: hookSelectCommune,
-    reset: resetAddressModal,
-  } = useAddressModal();
-  const {
     quotes,
     selected,
     setSelected,
@@ -74,8 +62,7 @@ export default function QuotePage() {
   } = useQuote();
   const {
     regions: chilexpressRegions,
-    coverageAreas: chilexpressCoverage,
-    findCountyByName: findChilexpressCounty,
+    loadCoverageAreas,
   } = useChilexpress();
 
   // address
@@ -83,21 +70,41 @@ export default function QuotePage() {
     null,
   );
   const [openAddressModal, setOpenAddressModal] = useState(false);
+  const [regions, setRegions] = useState<any[]>([]);
+  const [communes, setCommunes] = useState<any[]>([]);
   const [formAddress, setFormAddress] = useState<AddressFormValue>({
     street: "",
     number: "",
     regionId: "",
-    provinceId: "",
     communeId: "",
-    communeCode: undefined,
+    countyCode: undefined,
     postalCode: "",
     references: "",
   });
 
-  // guardamos también el código Chilexpress de la comuna que viene del hook postal
-  const [selectedCountyCode, setSelectedCountyCode] = useState<string | null>(
-    null
-  );
+  // Cargar datos de Chilexpress al montar
+  useEffect(() => {
+    (async () => {
+      const mappedRegions: any[] = [];
+      for (const region of chilexpressRegions) {
+        const regionId = (region as any).regionId;
+        const areas = await loadCoverageAreas(regionId);
+        // Deduplicar por nombre de comuna
+        const uniqueByName = Array.from(
+          new Map(areas.map(a => [a.countyName, a])).values()
+        );
+        mappedRegions.push({
+          name: (region as any).regionName,
+          code: regionId,
+          communes: uniqueByName.map(area => ({
+            name: area.countyName,
+            code: area.countyCode,
+          })),
+        });
+      }
+      setRegions(mappedRegions);
+    })();
+  }, [chilexpressRegions]);
 
   // package
   const [weight, setWeight] = useState("");
@@ -199,72 +206,56 @@ export default function QuotePage() {
   /* ------------------------ Handlers modal de dirección ------------------- */
   function handleCloseAddressModal() {
     setOpenAddressModal(false);
-    resetAddressModal();
     setFormAddress({
       street: "",
       number: "",
       regionId: "",
-      provinceId: "",
       communeId: "",
       countyCode: undefined,
       postalCode: "",
       references: "",
     });
-    setSelectedCountyCode(null);
+    setCommunes([]);
   }
 
   function handleSelectRegion(region: any | null) {
-    hookSelectRegion(region);
     if (region) {
       setFormAddress((prev) => ({
         ...prev,
         regionId: region.name,
-        provinceId: "",
         communeId: "",
         countyCode: undefined,
       }));
-      setSelectedCommuneCode(null);
-    }
-  }
-
-  function handleSelectProvince(province: any | null) {
-    hookSelectProvince(province);
-    if (province) {
+      setCommunes(region.communes || []);
+    } else {
+      setCommunes([]);
       setFormAddress((prev) => ({
         ...prev,
-        provinceId: province.name,
+        regionId: "",
         communeId: "",
         countyCode: undefined,
       }));
-      setSelectedCountyCode(null);
     }
   }
 
   function handleSelectCommune(commune: any | null) {
-    hookSelectCommune(commune);
     if (commune) {
       setFormAddress((prev) => ({
         ...prev,
-        communeId: commune.name, // nombre para mostrar
-        countyCode: commune.code, // código Chilexpress
+        communeId: commune.name,
+        countyCode: commune.code,
       }));
-      setSelectedCountyCode(commune.code);
     } else {
       setFormAddress((prev) => ({
         ...prev,
         communeId: "",
         countyCode: undefined,
       }));
-      setSelectedCountyCode(null);
     }
   }
 
   async function handleSaveAddress() {
-    const created = await addAddress({
-      ...formAddress,
-      countyCode: selectedCountyCode ?? formAddress.countyCode,
-    } as any);
-
+    const created = await addAddress(formAddress as any);
     setSelectedAddress(created);
     handleCloseAddressModal();
   }
@@ -312,7 +303,7 @@ export default function QuotePage() {
                 onOpenNew={() => setOpenAddressModal(true)}
                 originCode={ORIGIN_CODE}
                 destLabel={
-                  selectedAddress ? getCommune(selectedAddress) : "—"
+                  selectedAddress ? (selectedAddress as any).communeId || (selectedAddress as any).commune : "—"
                 }
               />
             </Card>
@@ -383,12 +374,9 @@ export default function QuotePage() {
         onClose={handleCloseAddressModal}
         value={formAddress}
         onChange={setFormAddress}
-        loadingPostal={loadingPostal}
         regions={regions}
-        provinces={provinces}
         communes={communes}
         onSelectRegion={handleSelectRegion}
-        onSelectProvince={handleSelectProvince}
         onSelectCommune={handleSelectCommune}
         onSave={handleSaveAddress}
       />

@@ -16,7 +16,6 @@ export default function DetailDialog({ open, row, onClose }: Props) {
           <Stack spacing={1.1}>
             <Typography><strong>Calle:</strong> {row.street} {row.number}</Typography>
             <Typography><strong>Comuna:</strong> {(row as any).comune ?? (row as any).communeId ?? ""}</Typography>
-            <Typography><strong>Provincia:</strong> {(row as any).province ?? (row as any).provinceId ?? ""}</Typography>
             <Typography><strong>Región:</strong> {(row as any).region ?? (row as any).regionId ?? ""}</Typography>
             {row.postalCode && <Typography><strong>Código Postal:</strong> {row.postalCode}</Typography>}
             {row.references && <Typography><strong>Referencias:</strong> {row.references}</Typography>}

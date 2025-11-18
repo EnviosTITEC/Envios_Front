@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from "@mui/material";
-import AddressForm, { AddressFormValue, Region, Province, Commune } from "../../../components/forms/AddressForm";
+import AddressForm, { AddressFormValue, Region, Commune } from "../../../components/forms/AddressForm";
 
 type Props = {
   open: boolean;
@@ -12,18 +12,16 @@ type Props = {
 
   loadingPostal?: boolean;
   regions: Region[];
-  provinces: Province[];
   communes: Commune[];
   onSelectRegion: (e: any, v: Region | null) => void;
-  onSelectProvince: (e: any, v: Province | null) => void;
   onSelectCommune: (e: any, v: Commune | null) => void;
 };
 
 export default function AddressModal(props: Props) {
   const {
     open, title, value, onChange, onClose, onSave, disabledSave,
-    loadingPostal, regions, provinces, communes,
-    onSelectRegion, onSelectProvince, onSelectCommune,
+    loadingPostal, regions, communes,
+    onSelectRegion, onSelectCommune,
   } = props;
 
   return (
@@ -35,10 +33,8 @@ export default function AddressModal(props: Props) {
           onChange={onChange}
           loadingPostal={!!loadingPostal}
           regions={regions}
-          provinces={provinces}
           communes={communes}
           onSelectRegion={onSelectRegion}
-          onSelectProvince={onSelectProvince}
           onSelectCommune={onSelectCommune}
         />
       </DialogContent>

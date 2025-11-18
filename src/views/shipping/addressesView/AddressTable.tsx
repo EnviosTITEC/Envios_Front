@@ -32,7 +32,6 @@ function AddressTable({ rows, loading, onView, onEdit, onDelete }: Props) {
             <TableRow>
               <TableCell>Dirección</TableCell>
               <TableCell>Comuna</TableCell>
-              <TableCell>Provincia</TableCell>
               <TableCell>Región</TableCell>
               <TableCell width={200}>Acciones</TableCell>
             </TableRow>
@@ -40,7 +39,7 @@ function AddressTable({ rows, loading, onView, onEdit, onDelete }: Props) {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
                   <CircularProgress size={22} />
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                     Cargando…
@@ -51,7 +50,7 @@ function AddressTable({ rows, loading, onView, onEdit, onDelete }: Props) {
 
             {!loading && rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
                     No hay direcciones aún
                   </Typography>
@@ -65,7 +64,6 @@ function AddressTable({ rows, loading, onView, onEdit, onDelete }: Props) {
                 <TableRow key={rid} hover>
                   <TableCell>{r.street} {r.number}</TableCell>
                   <TableCell>{(r as any).communeId ?? (r as any).comune ?? ""}</TableCell>
-                  <TableCell>{(r as any).provinceId ?? (r as any).province ?? ""}</TableCell>
                   <TableCell>{(r as any).regionId ?? (r as any).region ?? ""}</TableCell>
                   <TableCell>
                     <Stack direction="row" spacing={1}>

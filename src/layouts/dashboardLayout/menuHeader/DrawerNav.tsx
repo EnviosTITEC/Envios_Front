@@ -47,7 +47,6 @@ export default function DrawerNav({
     { name: "Cotización", href: "/shipping/quote" },
     { name: "Envíos", href: "/shipping/shipments" },
     { name: "Seguimiento", href: "/shipping/tracking" },
-    { name: "Transportistas", href: "/shipping/carriers" },
   ];
 
   // helper activo (exacto opcional)

@@ -28,9 +28,12 @@ export function useChilexpress() {
     const loadRegions = async () => {
       setState((prev) => ({ ...prev, loading: true, error: null }));
       try {
+        console.log("Cargando regiones de Chilexpress...");
         const regions = await getChilexpressRegions();
+        console.log("Regiones cargadas:", regions);
         setState((prev) => ({ ...prev, regions, loading: false }));
       } catch (error: any) {
+        console.error("❌ Error cargando regiones:", error);
         setState((prev) => ({
           ...prev,
           error: error?.message || "Error cargando regiones de Chilexpress",
@@ -71,7 +74,7 @@ export function useChilexpress() {
   ): Promise<{
     countyCode: string;
     countyName: string;
-    regionCode: string;
+    regionId: string;
   } | null> => {
     try {
       return await findChilexpressCountyByName(communeName);

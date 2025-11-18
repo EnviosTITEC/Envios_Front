@@ -1,22 +1,32 @@
-import { Box, Card, CardActionArea, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Box, Card, CardActionArea, Typography, Dialog, DialogContent, CircularProgress } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import SearchIcon from "@mui/icons-material/Search";
-import PeopleIcon from "@mui/icons-material/People";
 import { alpha } from "@mui/material/styles";
+import { useState } from "react";
 
 const RADIUS = 12;
 
 export default function Shipping() {
+  const navigate = useNavigate();
+  const [openDialog, setOpenDialog] = useState(false);
+
   const tiles = [
-    { title: "Mis direcciones", desc: "Gestiona tus direcciones", to: "/shipping/addresses", Icon: HomeIcon, swatch: "info" },
-    { title: "Cotización", desc: "Calcula el costo de tus envíos", to: "/shipping/quote", Icon: CalculateIcon, swatch: "success" },
-    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", to: "/shipping/shipments", Icon: LocalShippingIcon, swatch: "warning" },
-    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", to: "/shipping/tracking", Icon: SearchIcon, swatch: "secondary" },
-    { title: "Transportistas", desc: "Administra empresas de transporte", to: "/shipping/carriers", Icon: PeopleIcon, swatch: "error" },
+    { title: "Mis direcciones", desc: "Gestiona tus direcciones", to: "/shipping/addresses", Icon: HomeIcon, swatch: "info", clickable: true },
+    { title: "Cotización", desc: "Calcula el costo de tus envíos", to: "/shipping/quote", Icon: CalculateIcon, swatch: "success", clickable: true },
+    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", Icon: LocalShippingIcon, swatch: "warning", clickable: false },
+    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", Icon: SearchIcon, swatch: "secondary", clickable: false },
   ] as const;
+
+  const handleCardClick = (tile: any) => {
+    if (tile.clickable) {
+      navigate(tile.to);
+    } else {
+      setOpenDialog(true);
+    }
+  };
 
   return (
     <Box component="section" sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 5 } }}>
@@ -36,7 +46,7 @@ export default function Shipping() {
           alignItems: "stretch",
         }}
       >
-        {tiles.map(({ title, desc, to, Icon, swatch }) => (
+        {tiles.map(({ title, desc, to, Icon, swatch, clickable }) => (
           <Card
             key={title}
             role="listitem"
@@ -57,8 +67,9 @@ export default function Shipping() {
             })}
           >
             <CardActionArea
-              component={Link}
-              to={to}
+              component={clickable ? Link : "button"}
+              to={clickable ? to : undefined}
+              onClick={!clickable ? () => handleCardClick({ title, desc, Icon, swatch, clickable, to }) : undefined}
               sx={(t) => ({
                 p: 2.5,
                 display: "flex",
@@ -67,7 +78,10 @@ export default function Shipping() {
                 justifyContent: "space-between",
                 gap: 1,
                 minHeight: 176,
-                borderRadius: 0, // evita heredar redondeo “pill”
+                borderRadius: 0,
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
                 "&:focus-visible": {
                   outline: `2px solid ${alpha(t.palette.primary.main, 0.45)}`,
                   outlineOffset: 2,
@@ -96,6 +110,36 @@ export default function Shipping() {
           </Card>
         ))}
       </Box>
+
+      {/* Dialog: En proceso */}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            py: 4,
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="h6" fontWeight={600}>
+            En proceso...
+          </Typography>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Esta funcionalidad estará disponible próximamente.
+          </Typography>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
