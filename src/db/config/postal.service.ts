@@ -1,39 +1,19 @@
 // src/db/config/postal.service.ts
-export type PostalCommune = { code: string; name: string };
-export type PostalProvince = {
-  code: string;
-  name: string;
-  communes: PostalCommune[];
-};
-export type PostalRegion = {
-  code: string;
-  name: string;
-  provinces: PostalProvince[];
-};
 
-let _cache: PostalRegion[] | null = null;
-
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-
-export async function getRegionsWithProvincesAndCommunes(): Promise<PostalRegion[]> {
-  if (_cache) return _cache;
-  const res = await fetch(`${API_BASE}/geo/cl/regions`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  if (!res.ok) throw new Error("Error obteniendo datos territoriales");
-  const data = await res.json();
-  _cache = data;
-  return data;
-}
-
-/* ---------- NUEVO: cotizar ---------- */
 import type {
   QuoteRequest,
   QuoteOption,
   DeliveryCreate,
 } from "../../types/postal";
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+
+/**
+ * Cotizar envío con Chilexpress
+ * 
+ * Todos los códigos deben ser countyCode de Chilexpress.
+ * Obténgalos de: GET /geo/chilexpress/coverage-areas?regionCode=...
+ */
 export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> {
   const res = await fetch(`${API_BASE}/carriers/quote`, {
     method: "POST",
@@ -71,7 +51,9 @@ export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> 
   return mapped;
 }
 
-/* ---------- NUEVO: crear delivery ---------- */
+/**
+ * Crear delivery después de cotización confirmada
+ */
 export async function createDelivery(
   payload: DeliveryCreate,
 ): Promise<{ id: string }> {
