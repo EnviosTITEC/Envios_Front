@@ -25,8 +25,9 @@ import QuoteList from "./QuoteList";
 import AddressModal from "./AddressModal";
 import ConfirmDialog from "./ConfirmDialog";
 
-import { ORIGIN_CODE, DEST_CODE_FALLBACK } from "./constants";
+import { ORIGIN_CODE } from "./constants";
 import type { AddressRow } from "../../../types/address";
+import { getRegionsWithProvincesAndCommunes } from "../../../db/config/postal.service";
 
 /* ----------------------------- Tipos locales ----------------------------- */
 type AddressFormValue = {
@@ -34,7 +35,8 @@ type AddressFormValue = {
   number: string;
   regionId: string;
   provinceId: string;
-  communeId: string;
+  communeId: string;      // nombre de la comuna
+  communeCode?: string;   // código DPA (13114, etc.)
   postalCode?: string;
   references?: string;
 };
@@ -43,6 +45,46 @@ type AddressOption = { label: string; value: AddressRow };
 
 /* ----------------------------- Helpers locales --------------------------- */
 const toNum = (v: string) => Number.parseFloat(v || "0");
+
+/**
+ * Dada una dirección del backend, intenta obtener el código DPA de la comuna.
+ * - Si ya tiene `communeCode` o `communeId` numérico, lo usa.
+ * - Si no, busca por nombre en el catálogo territorial de /geo/cl/regions.
+ */
+async function resolveCommuneCodeFromAddress(
+  address: AddressRow | any
+): Promise<string | null> {
+  // 1) Si ya viene el código, lo devolvemos
+  if (address.communeCode && typeof address.communeCode === "string") {
+    return address.communeCode;
+  }
+  if (
+    address.communeId &&
+    typeof address.communeId === "string" &&
+    /^\d+$/.test(address.communeId)
+  ) {
+    return address.communeId;
+  }
+
+  // 2) Nombre de la comuna según distintos campos posibles
+  const communeName: string =
+    address.comune ?? address.commune ?? address.communeId ?? "";
+
+  if (!communeName) return null;
+
+  // 3) Buscamos en el catálogo territorial (cacheado en postal.service)
+  const regions = await getRegionsWithProvincesAndCommunes();
+  for (const r of regions) {
+    for (const p of r.provinces ?? []) {
+      const found = p.communes.find((c) => c.name === communeName);
+      if (found?.code) {
+        return found.code;
+      }
+    }
+  }
+
+  return null;
+}
 
 /* ======================================================================== */
 export default function QuotePage() {
@@ -72,7 +114,9 @@ export default function QuotePage() {
   } = useQuote();
 
   // address
-  const [selectedAddress, setSelectedAddress] = useState<AddressRow | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<AddressRow | null>(
+    null,
+  );
   const [openAddressModal, setOpenAddressModal] = useState(false);
   const [formAddress, setFormAddress] = useState<AddressFormValue>({
     street: "",
@@ -80,9 +124,15 @@ export default function QuotePage() {
     regionId: "",
     provinceId: "",
     communeId: "",
+    communeCode: undefined,
     postalCode: "",
     references: "",
   });
+
+  // guardamos también el código de la comuna que viene del hook postal
+  const [selectedCommuneCode, setSelectedCommuneCode] = useState<
+    string | null
+  >(null);
 
   // package
   const [weight, setWeight] = useState("");
@@ -92,7 +142,9 @@ export default function QuotePage() {
   const [declared, setDeclared] = useState("");
 
   const m3 = useMemo(() => {
-    const h = toNum(height), w = toNum(width), l = toNum(length);
+    const h = toNum(height),
+      w = toNum(width),
+      l = toNum(length);
     if (!h || !w || !l) return "";
     return ((h * w * l) / 1_000_000).toFixed(4);
   }, [height, width, length]);
@@ -111,31 +163,47 @@ export default function QuotePage() {
   const [openConfirm, setOpenConfirm] = useState(false);
 
   /* --------------------------- Acciones principales ----------------------- */
-  function onQuote() {
-    if (!isFormValid) {
-      setError("Completa correctamente los parámetros y selecciona una dirección.");
+  async function onQuote() {
+    if (!isFormValid || !selectedAddress) {
+      setError(
+        "Completa correctamente los parámetros y selecciona una dirección.",
+      );
       return;
     }
+
+    // Intentamos obtener un código de comuna válido
+    const destCommuneId = await resolveCommuneCodeFromAddress(selectedAddress);
+
+    if (!destCommuneId) {
+      setError(
+        "La dirección seleccionada no tiene una comuna válida en el catálogo territorial.",
+      );
+      return;
+    }
+
     setError("");
 
+    // Body que espera nuestro backend (luego lo mapeamos a Chilexpress)
     getQuote({
-      originCountyCode: ORIGIN_CODE,
-      destinationCountyCode: DEST_CODE_FALLBACK, // pendiente mapping real
+      originCommuneId: ORIGIN_CODE, // código DPA fijo de origen (bodega)
+      destinationCommuneId: destCommuneId,
       package: {
-        weight: String(toNum(weight)),
-        height: String(toNum(height)),
-        width: String(toNum(width)),
-        length: String(toNum(length)),
+        weight: String(toNum(weight)), // kg
+        height: String(toNum(height)), // cm
+        width: String(toNum(width)), // cm
+        length: String(toNum(length)), // cm
       },
-      productType: 1,
+      productType: 3, // 1 = Documento, 3 = Encomienda
       contentType: 1,
       declaredWorth: String(toNum(declared)),
-      deliveryTime: 0,
+      deliveryTime: 0, // 0 = Todos
     });
   }
 
   async function onCreateDelivery() {
     if (!selected || !selectedAddress) return;
+
+    const destCommuneId = await resolveCommuneCodeFromAddress(selectedAddress);
 
     await createDeliveryFrom({
       addressId: (selectedAddress as any)._id ?? selectedAddress.id,
@@ -151,13 +219,12 @@ export default function QuotePage() {
         carrier: "CHILEXPRESS",
         speed: selected.serviceName,
         declaredWorth: String(toNum(declared)),
-        originCountyCode: ORIGIN_CODE,
-        destinationCountyCode: DEST_CODE_FALLBACK,
+        originCommuneId: ORIGIN_CODE,
+        destinationCommuneId: destCommuneId,
       },
     });
 
     setOpenConfirm(false);
-    // reset suave (opcional)
     setSelected(null);
   }
 
@@ -171,9 +238,11 @@ export default function QuotePage() {
       regionId: "",
       provinceId: "",
       communeId: "",
+      communeCode: undefined,
       postalCode: "",
       references: "",
     });
+    setSelectedCommuneCode(null);
   }
 
   function handleSelectRegion(region: any | null) {
@@ -184,7 +253,9 @@ export default function QuotePage() {
         regionId: region.name,
         provinceId: "",
         communeId: "",
+        communeCode: undefined,
       }));
+      setSelectedCommuneCode(null);
     }
   }
 
@@ -195,7 +266,9 @@ export default function QuotePage() {
         ...prev,
         provinceId: province.name,
         communeId: "",
+        communeCode: undefined,
       }));
+      setSelectedCommuneCode(null);
     }
   }
 
@@ -204,13 +277,26 @@ export default function QuotePage() {
     if (commune) {
       setFormAddress((prev) => ({
         ...prev,
-        communeId: commune.name,
+        communeId: commune.name, // nombre para mostrar
+        communeCode: commune.code, // código DPA para cotizar
       }));
+      setSelectedCommuneCode(commune.code);
+    } else {
+      setFormAddress((prev) => ({
+        ...prev,
+        communeId: "",
+        communeCode: undefined,
+      }));
+      setSelectedCommuneCode(null);
     }
   }
 
   async function handleSaveAddress() {
-    const created = await addAddress(formAddress);
+    const created = await addAddress({
+      ...formAddress,
+      communeCode: selectedCommuneCode ?? formAddress.communeCode,
+    } as any);
+
     setSelectedAddress(created); // queda seleccionada para cotizar de inmediato
     handleCloseAddressModal();
   }
@@ -257,7 +343,9 @@ export default function QuotePage() {
                 onChange={setSelectedAddress}
                 onOpenNew={() => setOpenAddressModal(true)}
                 originCode={ORIGIN_CODE}
-                destLabel={selectedAddress ? getCommune(selectedAddress) : "—"}
+                destLabel={
+                  selectedAddress ? getCommune(selectedAddress) : "—"
+                }
               />
             </Card>
 
@@ -288,7 +376,11 @@ export default function QuotePage() {
                 size="small"
                 sx={{ mt: 3 }}
               >
-                {loading ? <CircularProgress size={18} /> : "Calcular cotización"}
+                {loading ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  "Calcular cotización"
+                )}
               </Button>
             </Card>
           </Grid>

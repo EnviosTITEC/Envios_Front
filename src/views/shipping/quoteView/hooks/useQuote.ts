@@ -1,6 +1,9 @@
-// src/hooks/useQuote.ts
+// src/views/shipping/quoteView/hooks/useQuote.ts
 import { useState } from "react";
-import { quoteShipping, createDelivery } from "../../../../db/config/postal.service";
+import {
+  quoteShipping,
+  createDelivery,
+} from "../../../../db/config/postal.service";
 import type { QuoteOption } from "../../../../types/postal";
 
 export function useQuote() {
@@ -9,6 +12,7 @@ export function useQuote() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // req = DeliveryDto que definimos en el backend
   async function getQuote(req: any) {
     setError("");
     setSelected(null);
@@ -29,5 +33,14 @@ export function useQuote() {
     return createDelivery(selection);
   }
 
-  return { quotes, selected, setSelected, loading, error, getQuote, createDeliveryFrom, setError };
+  return {
+    quotes,
+    selected,
+    setSelected,
+    loading,
+    error,
+    getQuote,
+    createDeliveryFrom,
+    setError,
+  };
 }

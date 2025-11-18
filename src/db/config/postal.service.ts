@@ -1,6 +1,15 @@
+// src/db/config/postal.service.ts
 export type PostalCommune = { code: string; name: string };
-export type PostalProvince = { code: string; name: string; communes: PostalCommune[] };
-export type PostalRegion = { code: string; name: string; provinces: PostalProvince[] };
+export type PostalProvince = {
+  code: string;
+  name: string;
+  communes: PostalCommune[];
+};
+export type PostalRegion = {
+  code: string;
+  name: string;
+  provinces: PostalProvince[];
+};
 
 let _cache: PostalRegion[] | null = null;
 
@@ -19,34 +28,59 @@ export async function getRegionsWithProvincesAndCommunes(): Promise<PostalRegion
 }
 
 /* ---------- NUEVO: cotizar ---------- */
-import type { QuoteRequest, QuoteOption, DeliveryCreate } from "../../types/postal";
+import type {
+  QuoteRequest,
+  QuoteOption,
+  DeliveryCreate,
+} from "../../types/postal";
 
 export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> {
-  const res = await fetch(`${API_BASE}/shipping/quote`, {
+  const res = await fetch(`${API_BASE}/carriers/quote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+
   if (!res.ok) {
-    // Si tu backend aún no está, deja un mock amable
-    console.warn("[quoteShipping] usando mock por HTTP ", res.status);
-    return [
-      { serviceCode: "STND", serviceName: "Estándar 48-72h", price: 4990, currency: "CLP", etaDescription: "2–3 días hábiles" },
-      { serviceCode: "EXPR", serviceName: "Express 24h",     price: 7990, currency: "CLP", etaDescription: "1 día hábil" },
-    ];
+    const msg = await res.text().catch(() => "");
+    throw new Error(msg || `Error HTTP ${res.status} al cotizar envío`);
   }
-  return res.json();
+
+  const raw = await res.json();
+
+  // Intentamos encontrar la lista de opciones en distintas formas posibles
+  const options =
+    raw?.courierServiceOptions ||
+    raw?.data?.courierServiceOptions ||
+    [];
+
+  if (!Array.isArray(options)) return [];
+
+  const mapped: QuoteOption[] = options.map((o: any) => ({
+    serviceCode: o.serviceCode ?? o.serviceTypeCode ?? "",
+    serviceName: o.serviceName ?? o.serviceDescription ?? "Servicio Chilexpress",
+    price:
+      o.finalPrice ??
+      o.totalAmountWithTaxes ??
+      o.shippingPrice ??
+      0,
+    currency: "CLP",
+    etaDescription: o.deliveryTypeName ?? o.deliveryEstimate ?? "",
+  }));
+
+  return mapped;
 }
 
 /* ---------- NUEVO: crear delivery ---------- */
-export async function createDelivery(payload: DeliveryCreate): Promise<{ id: string }> {
+export async function createDelivery(
+  payload: DeliveryCreate,
+): Promise<{ id: string }> {
   const res = await fetch(`${API_BASE}/deliveries`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    // fallback blando si backend no está listo
     console.warn("[createDelivery] mock por HTTP ", res.status);
     return { id: crypto.randomUUID() };
   }

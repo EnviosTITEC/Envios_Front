@@ -1,3 +1,4 @@
+// src/components/forms/AddressForm.tsx
 import { Box, Grid, TextField, Autocomplete, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -11,17 +12,20 @@ import {
 } from "../primitives/formPrimitives";
 
 /** Tipos territoriales */
+// OJO: ahora también llevan `code`, que es el código DPA
 export type Region = {
   name: string;
-  provinces?: { name: string; communes?: { name: string }[] }[];
+  code?: string;
+  provinces?: { name: string; code?: string; communes?: { name: string; code?: string }[] }[];
 };
 
 export type Province = {
   name: string;
-  communes?: { name: string }[];
+  code?: string;
+  communes?: { name: string; code?: string }[];
 };
 
-export type Commune = { name: string };
+export type Commune = { name: string; code?: string };
 
 /** Shape del form controlado desde Addresses */
 export type AddressFormValue = {
@@ -29,7 +33,8 @@ export type AddressFormValue = {
   number: string;
   regionId: string;
   provinceId: string;
-  communeId: string;
+  communeId: string;       // nombre de la comuna
+  communeCode?: string;    // código DPA (13114, etc.)
   postalCode?: string;
   references?: string;
 };
@@ -78,7 +83,18 @@ export default function AddressForm({
               isOptionEqualToValue={(o, v) => o.name === v.name}
               getOptionLabel={(opt) => opt?.name ?? ""}
               value={regions.find((r) => r.name === value.regionId) ?? null}
-              onChange={onSelectRegion}
+              onChange={(e, r) => {
+                // avisamos al hook
+                onSelectRegion(e, r);
+                // actualizamos el form
+                onChange({
+                  ...value,
+                  regionId: r?.name ?? "",
+                  provinceId: "",
+                  communeId: "",
+                  communeCode: undefined,
+                });
+              }}
               slotProps={{
                 popper: { sx: { zIndex: 1500 } },
                 paper: { sx: autoPaperSx(theme) },
@@ -110,7 +126,15 @@ export default function AddressForm({
               isOptionEqualToValue={(o, v) => o.name === v.name}
               getOptionLabel={(opt) => opt?.name ?? ""}
               value={provinces.find((p) => p.name === value.provinceId) ?? null}
-              onChange={onSelectProvince}
+              onChange={(e, p) => {
+                onSelectProvince(e, p);
+                onChange({
+                  ...value,
+                  provinceId: p?.name ?? "",
+                  communeId: "",
+                  communeCode: undefined,
+                });
+              }}
               slotProps={{
                 popper: { sx: { zIndex: 1500 } },
                 paper: { sx: autoPaperSx(theme) },
@@ -120,7 +144,9 @@ export default function AddressForm({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  placeholder={value.regionId ? "Seleccionar provincia" : "Selecciona una región"}
+                  placeholder={
+                    value.regionId ? "Seleccionar provincia" : "Selecciona una región"
+                  }
                   size="small"
                   sx={inputAutoSx(theme)}
                 />
@@ -142,7 +168,16 @@ export default function AddressForm({
               isOptionEqualToValue={(o, v) => o.name === v.name}
               getOptionLabel={(opt) => opt?.name ?? ""}
               value={communes.find((c) => c.name === value.communeId) ?? null}
-              onChange={onSelectCommune}
+              onChange={(e, c) => {
+                // avisamos al hook (para postal)
+                onSelectCommune(e, c);
+                // y actualizamos **nombre** + **código DPA**
+                onChange({
+                  ...value,
+                  communeId: c?.name ?? "",
+                  communeCode: c?.code, // 👈 AQUÍ guardamos el código
+                });
+              }}
               slotProps={{
                 popper: { sx: { zIndex: 1500 } },
                 paper: { sx: autoPaperSx(theme) },
@@ -152,7 +187,9 @@ export default function AddressForm({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  placeholder={value.provinceId ? "Seleccionar comuna" : "Selecciona una provincia"}
+                  placeholder={
+                    value.provinceId ? "Seleccionar comuna" : "Selecciona una provincia"
+                  }
                   size="small"
                   sx={inputAutoSx(theme)}
                 />
@@ -226,18 +263,28 @@ export default function AddressForm({
                   padding: "8px 10px",
                   backgroundColor: "#fff",
                 },
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.divider },
-                "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.text.secondary },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.divider,
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.text.secondary,
+                },
                 "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
                   borderColor: theme.palette.primary.main,
                   borderWidth: 1,
                 },
                 "& .MuiInputBase-input": { padding: 0, margin: 0 },
-                "& .MuiInputBase-input::placeholder": { opacity: 1, color: theme.palette.text.disabled },
+                "& .MuiInputBase-input::placeholder": {
+                  opacity: 1,
+                  color: theme.palette.text.disabled,
+                },
               }}
             />
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5 }}>
-              <Typography variant="caption" color={refsLen >= 120 ? "error.main" : "text.secondary"}>
+              <Typography
+                variant="caption"
+                color={refsLen >= 120 ? "error.main" : "text.secondary"}
+              >
                 {refsLen} / 128
               </Typography>
             </Box>

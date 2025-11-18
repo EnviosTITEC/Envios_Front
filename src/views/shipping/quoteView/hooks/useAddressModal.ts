@@ -1,9 +1,11 @@
+// src/views/shipping/Quote/hooks/useAddressModal.ts
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { getRegionsWithProvincesAndCommunes } from "../../../../db/config/postal.service";
 
-export type Commune = { name: string; id?: string };
-export type Province = { name: string; communes?: Commune[]; id?: string };
-export type Region = { name: string; provinces?: Province[]; id?: string };
+// Ojo: ahora usamos `code`, no `id`
+export type Commune = { name: string; code?: string };
+export type Province = { name: string; code?: string; communes?: Commune[] };
+export type Region = { name: string; code?: string; provinces?: Province[] };
 
 export function useAddressModal() {
   const [regions, setRegions] = useState<Region[]>([]);
@@ -21,12 +23,17 @@ export function useAddressModal() {
         setRegions(
           data.map((r: any) => ({
             name: r.name,
-            id: r.id,
-            provinces: r.provinces?.map((p: any) => ({
-              name: p.name,
-              id: p.id,
-              communes: p.communes?.map((c: any) => ({ name: c.name, id: c.id })) ?? [],
-            })) ?? [],
+            code: r.code ?? r.id,
+            provinces:
+              r.provinces?.map((p: any) => ({
+                name: p.name,
+                code: p.code ?? p.id,
+                communes:
+                  p.communes?.map((c: any) => ({
+                    name: c.name,
+                    code: c.code ?? c.id,
+                  })) ?? [],
+              })) ?? [],
           }))
         );
       } finally {
@@ -50,8 +57,14 @@ export function useAddressModal() {
     setSelectedCommune(commune);
   }, []);
 
-  const provinces = useMemo(() => selectedRegion?.provinces ?? [], [selectedRegion]);
-  const communes = useMemo(() => selectedProvince?.communes ?? [], [selectedProvince]);
+  const provinces = useMemo(
+    () => selectedRegion?.provinces ?? [],
+    [selectedRegion]
+  );
+  const communes = useMemo(
+    () => selectedProvince?.communes ?? [],
+    [selectedProvince]
+  );
 
   const reset = useCallback(() => {
     setSelectedRegion(null);

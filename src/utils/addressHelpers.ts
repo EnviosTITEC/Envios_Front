@@ -1,3 +1,4 @@
+//src/utils/addressHelpers.ts
 import type { AddressRow } from "../types/address";
 
 /** Normaliza propiedad de comuna según shape de backend/local */

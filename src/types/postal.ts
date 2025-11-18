@@ -1,6 +1,10 @@
+// src/types/postal.ts
+
 export interface QuoteRequest {
-  originCountyCode: string;
-  destinationCountyCode: string;
+  // Ahora el front habla en códigos DPA (API Gobierno),
+  // NO en códigos internos de Chilexpress.
+  originCommuneId: string;
+  destinationCommuneId: string;
   package: { weight: string; height: string; width: string; length: string };
   productType: number;
   contentType: number;
