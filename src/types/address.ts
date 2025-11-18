@@ -4,9 +4,9 @@ export interface AddressRow {
   street: string;
   number: string;
 
-  regionId: string;    // nombre región elegida
-  provinceId: string;  // nombre provincia elegida
-  communeId: string;   // nombre comuna elegida
+  regionId: string;      // nombre región elegida
+  communeId: string;     // nombre comuna elegida
+  countyCode?: string;   // código Chilexpress
 
   postalCode?: string;
   references?: string;

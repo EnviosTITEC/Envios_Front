@@ -1,15 +1,18 @@
 // src/types/postal.ts
 
 export interface QuoteRequest {
-  // Ahora el front habla en códigos DPA (API Gobierno),
-  // NO en códigos internos de Chilexpress.
-  originCommuneId: string;
-  destinationCommuneId: string;
-  package: { weight: string; height: string; width: string; length: string };
-  productType: number;
-  contentType: number;
-  declaredWorth: string;
-  deliveryTime: number;
+  originCountyCode: string;      // Código Chilexpress (ej: "STGO")
+  destinationCountyCode: string; // Código Chilexpress (ej: "VAP")
+  package: {
+    weight: string;    // kg
+    height: string;    // cm
+    width: string;     // cm
+    length: string;    // cm
+  };
+  productType: number;      // 1 = Documento, 3 = Encomienda
+  contentType: number;      // Tipo de contenido
+  declaredWorth: string;    // Valor declarado en CLP
+  deliveryTime: number;     // 0 = Todos los servicios
 }
 
 export interface QuoteOption {
