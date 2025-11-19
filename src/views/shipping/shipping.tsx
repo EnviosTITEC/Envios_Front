@@ -1,5 +1,5 @@
-import { Box, Card, CardActionArea, Typography, Dialog, DialogContent, CircularProgress } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Box, Card, CardActionArea, Typography, Dialog, DialogContent, CircularProgress, Container } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import CalculateIcon from "@mui/icons-material/Calculate";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -14,41 +14,44 @@ export default function Shipping() {
   const [openDialog, setOpenDialog] = useState(false);
 
   const tiles = [
-    { title: "Mis direcciones", desc: "Gestiona tus direcciones", to: "/shipping/addresses", Icon: HomeIcon, swatch: "info", clickable: true },
-    { title: "Cotización", desc: "Calcula el costo de tus envíos", to: "/shipping/quote", Icon: CalculateIcon, swatch: "success", clickable: true },
-    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", Icon: LocalShippingIcon, swatch: "warning", clickable: false },
-    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", Icon: SearchIcon, swatch: "secondary", clickable: false },
+    { title: "Mis direcciones", desc: "Gestiona tus direcciones", path: "/shipping/addresses", Icon: HomeIcon, swatch: "info", clickable: true },
+    { title: "Cotización", desc: "Calcula el costo de tus envíos", path: "/shipping/quote", Icon: CalculateIcon, swatch: "success", clickable: true },
+    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", path: "/shipping/shipments", Icon: LocalShippingIcon, swatch: "warning", clickable: false },
+    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", path: "/shipping/tracking", Icon: SearchIcon, swatch: "secondary", clickable: false },
   ] as const;
 
-  const handleCardClick = (tile: any) => {
+  const handleCardClick = (tile: typeof tiles[number]) => {
     if (tile.clickable) {
-      navigate(tile.to);
+      navigate(tile.path);
     } else {
       setOpenDialog(true);
     }
   };
 
   return (
-    <Box component="section" sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 5 } }}>
-      <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h4" fontWeight={800}>Sistema de Envíos PulgaShop</Typography>
-        <Typography color="text.secondary">Gestiona todos los aspectos de tus envíos desde un solo lugar.</Typography>
+    <Container maxWidth="lg" component="section" sx={{ py: { xs: 3, md: 5 }, minHeight: "100%" }}>
+      <Box sx={{ textAlign: "center", mb: 5 }}>
+        <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
+          Sistema de Envíos PulgaShop
+        </Typography>
+        <Typography variant="h6" color="text.secondary" fontWeight={400}>
+          Gestiona todos los aspectos de tus envíos desde un solo lugar.
+        </Typography>
       </Box>
 
       <Box
         role="list"
         sx={{
-          maxWidth: 1100,
-          mx: "auto",
           display: "grid",
           gap: 3,
           gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
           alignItems: "stretch",
+          pb: 3,
         }}
       >
-        {tiles.map(({ title, desc, to, Icon, swatch, clickable }) => (
+        {tiles.map((tile) => (
           <Card
-            key={title}
+            key={tile.title}
             role="listitem"
             elevation={0}
             sx={(t) => ({
@@ -67,16 +70,15 @@ export default function Shipping() {
             })}
           >
             <CardActionArea
-              component={clickable ? Link : "button"}
-              to={clickable ? to : undefined}
-              onClick={!clickable ? () => handleCardClick({ title, desc, Icon, swatch, clickable, to }) : undefined}
+              onClick={() => handleCardClick(tile)}
               sx={(t) => ({
                 p: 2.5,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
-                gap: 1,
+                gap: 1.5,
+                height: "100%",
                 minHeight: 176,
                 borderRadius: 0,
                 border: "none",
@@ -87,7 +89,7 @@ export default function Shipping() {
                   outlineOffset: 2,
                 },
               })}
-              aria-label={title}
+              aria-label={tile.title}
             >
               <Box
                 sx={(t) => ({
@@ -98,14 +100,14 @@ export default function Shipping() {
                   alignItems: "center",
                   justifyContent: "center",
                   mb: 1.25,
-                  background: alpha((t.palette as any)[swatch].main, 0.14),
+                  background: alpha((t.palette as any)[tile.swatch].main, 0.14),
                 })}
               >
-                <Icon sx={(t) => ({ color: (t.palette as any)[swatch].main })} />
+                <tile.Icon sx={(t) => ({ color: (t.palette as any)[tile.swatch].main })} />
               </Box>
 
-              <Typography variant="subtitle1" fontWeight={700}>{title}</Typography>
-              <Typography variant="body2" color="text.secondary">{desc}</Typography>
+              <Typography variant="subtitle1" fontWeight={700}>{tile.title}</Typography>
+              <Typography variant="body2" color="text.secondary">{tile.desc}</Typography>
             </CardActionArea>
           </Card>
         ))}
@@ -140,6 +142,6 @@ export default function Shipping() {
           </Typography>
         </DialogContent>
       </Dialog>
-    </Box>
+    </Container>
   );
 }

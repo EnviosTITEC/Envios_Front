@@ -1,14 +1,11 @@
 import { Box, Typography } from "@mui/material";
 
 /**
- * Vista placeholder de bienvenida.
- * Esta pantalla solo muestra el mensaje de inicio
- * mientras otro equipo gestiona la parte principal.
+ * Vista Home - Página de bienvenida
  */
 export default function Home() {
   return (
     <Box
-      component="section"
       sx={{
         display: "flex",
         flexDirection: "column",

@@ -10,7 +10,6 @@ type Props = {
   onSave: () => void;
   disabledSave?: boolean;
 
-  loadingPostal?: boolean;
   regions: Region[];
   communes: Commune[];
   onSelectRegion: (e: any, v: Region | null) => void;
@@ -20,7 +19,7 @@ type Props = {
 export default function AddressModal(props: Props) {
   const {
     open, title, value, onChange, onClose, onSave, disabledSave,
-    loadingPostal, regions, communes,
+    regions, communes,
     onSelectRegion, onSelectCommune,
   } = props;
 
@@ -31,7 +30,6 @@ export default function AddressModal(props: Props) {
         <AddressForm
           value={value}
           onChange={onChange}
-          loadingPostal={!!loadingPostal}
           regions={regions}
           communes={communes}
           onSelectRegion={onSelectRegion}
