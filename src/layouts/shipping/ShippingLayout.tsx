@@ -14,10 +14,11 @@ export default function ShippingLayout() {
       }}
     >
       {/* Contenido */}
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" disableGutters>
         <Box
           sx={{
-            py: { xs: 2, md: 3 },
+            py: { xs: 1, md: 2 },
+            px: { xs: 0.5, md: 2 },
             overflowX: "auto",
             maxWidth: "100%",
           }}

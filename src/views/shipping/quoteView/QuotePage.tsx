@@ -12,6 +12,7 @@ import {
 
 import PageCard from "../../../components/primitives/PageCard";
 import SectionHeader from "../../../components/primitives/SectionHeader";
+import NavigationButtons from "../../../components/common/NavigationButtons";
 
 import { useAddresses } from "./hooks/useAddresses";
 import { useQuote } from "./hooks/useQuote";
@@ -263,6 +264,7 @@ export default function QuotePage() {
   /* -------------------------------- Render -------------------------------- */
   return (
     <Box sx={{ px: { xs: 2, md: 0 }, py: 1, mb: 30 }}>
+      <NavigationButtons />
       <PageCard>
         <SectionHeader
           title="Cotización"
@@ -282,10 +284,10 @@ export default function QuotePage() {
             item
             xs={12}
             md={6}
-            sx={{ display: "flex", flexDirection: "column", gap: 4 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 3 }}
           >
-            <Card variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+            <Card variant="outlined" sx={{ p: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Dirección de destino
               </Typography>
 
@@ -308,8 +310,8 @@ export default function QuotePage() {
               />
             </Card>
 
-            <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+            <Card variant="outlined" sx={{ p: 1.5, mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Parámetros del envío
               </Typography>
 
@@ -333,7 +335,7 @@ export default function QuotePage() {
                 onClick={onQuote}
                 disabled={loading || !isFormValid}
                 size="small"
-                sx={{ mt: 3 }}
+                sx={{ mt: 1.5 }}
               >
                 {loading ? (
                   <CircularProgress size={18} />
@@ -349,10 +351,10 @@ export default function QuotePage() {
             item
             xs={12}
             md={6}
-            sx={{ display: "flex", flexDirection: "column" }}
+            sx={{ display: "flex", flexDirection: "column", mt: { xs: 0, md: 0 } }}
           >
-            <Card variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
+            <Card variant="outlined" sx={{ p: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Opciones disponibles
               </Typography>
 

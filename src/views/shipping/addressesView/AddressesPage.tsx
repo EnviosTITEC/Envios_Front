@@ -3,6 +3,7 @@ import { Box, Button, Card } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import PageCard from "../../../components/primitives/PageCard";
 import SectionHeader from "../../../components/primitives/SectionHeader";
+import NavigationButtons from "../../../components/common/NavigationButtons";
 import AddressTable from "./AddressTable";
 import AddressModal from "./AddressModal";
 import DetailDialog from "./DetailDialog";
@@ -126,7 +127,8 @@ export default function AddressesPage() {
   }
 
   return (
-    <Box sx={{ px: { xs: 2, md: 0 }, py: 1, mb: 12 }}>
+    <Box sx={{ px: { xs: 1, md: 0 }, py: 1, mb: 12 }}>
+      <NavigationButtons />
       <PageCard>
         <SectionHeader
           title="Mis direcciones"
@@ -138,7 +140,7 @@ export default function AddressesPage() {
           }
         />
 
-        <Card variant="outlined" sx={{ p: 2, mt: 2, mb: 4 }}>
+        <Card variant="outlined" sx={{ p: 1.5, mt: 1.5, mb: 2 }}>
           <AddressTable
             rows={items}
             loading={loading}

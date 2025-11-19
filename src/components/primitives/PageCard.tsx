@@ -29,7 +29,7 @@ export default function PageCard({ children, sx }: Props) {
         ...sx,
       })}
     >
-      <CardContent sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
+      <CardContent sx={{ p: { xs: 1.5, md: 2.5 }, maxWidth: "100%", mx: "auto" }}>
         {children}
       </CardContent>
     </Card>

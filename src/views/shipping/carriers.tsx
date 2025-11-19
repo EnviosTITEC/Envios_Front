@@ -9,10 +9,12 @@ import { Link } from "react-router-dom";
 
 import PageCard from "../../components/primitives/PageCard";
 import SectionHeader from "../../components/primitives/SectionHeader";
+import NavigationButtons from "../../components/common/NavigationButtons";
 
 export default function Carriers() {
   return (
     <Box sx={{ px: { xs: 2, md: 0 }, py: 1 }}>
+      <NavigationButtons />
       <PageCard>
         <SectionHeader
           title="Transportistas"
