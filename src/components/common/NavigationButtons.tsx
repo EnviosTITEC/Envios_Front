@@ -26,18 +26,25 @@ export default function NavigationButtons({
         display: "flex",
         gap: 2,
         mb: 3,
+        justifyContent: "space-between",
+        alignItems: "center",
         ...sx,
       }}
     >
       {showBackToShipping && (
         <Button
-          variant="outlined"
+          variant="text"
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/shipping")}
           sx={{
             textTransform: "none",
             fontSize: "0.95rem",
             fontWeight: 500,
+            color: "text.secondary",
+            "&:hover": {
+              color: "primary.main",
+              bgcolor: "transparent",
+            },
           }}
         >
           Volver a Envíos
@@ -45,18 +52,25 @@ export default function NavigationButtons({
       )}
       
       {showBackToHome && (
-        <Button
-          variant="outlined"
-          startIcon={<HomeIcon />}
-          onClick={() => navigate("/")}
-          sx={{
-            textTransform: "none",
-            fontSize: "0.95rem",
-            fontWeight: 500,
-          }}
-        >
-          Volver a PulgaShop
-        </Button>
+        <Box sx={{ ml: "auto" }}>
+          <Button
+            variant="text"
+            startIcon={<HomeIcon />}
+            onClick={() => navigate("/")}
+            sx={{
+              textTransform: "none",
+              fontSize: "0.95rem",
+              fontWeight: 500,
+              color: "text.secondary",
+              "&:hover": {
+                color: "primary.main",
+                bgcolor: "transparent",
+              },
+            }}
+          >
+            Volver a PulgaShop
+          </Button>
+        </Box>
       )}
     </Box>
   );
