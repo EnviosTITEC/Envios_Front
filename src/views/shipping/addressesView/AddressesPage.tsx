@@ -68,6 +68,9 @@ export default function AddressesPage() {
     form.regionId && form.communeId && form.street && form.number,
   [form]);
 
+  // En modo edición, permitir guardar aunque no haya interactuado con los campos
+  const canSave = mode === "edit" || requiredOK;
+
   function onOpenCreate() {
     setMode("create"); setCurrentId(null);
     setForm({ street:"", number:"", regionId:"", communeId:"", postalCode:"", references:"" });
@@ -92,7 +95,8 @@ export default function AddressesPage() {
       references: row.references ?? "",
     });
     const rMatch = regions.find(r => r.name === region) || null;
-    setCommunes(rMatch?.communes ?? []);
+    const communes = rMatch?.communes ?? [];
+    setCommunes(communes);
     setOpenForm(true);
   }
 
@@ -134,7 +138,7 @@ export default function AddressesPage() {
           }
         />
 
-        <Card variant="outlined" sx={{ p: 2, mt: 2 }}>
+        <Card variant="outlined" sx={{ p: 2, mt: 2, mb: 4 }}>
           <AddressTable
             rows={items}
             loading={loading}
@@ -152,14 +156,19 @@ export default function AddressesPage() {
         onChange={setForm}
         onClose={() => setOpenForm(false)}
         onSave={onSave}
-        disabledSave={!requiredOK}
+        disabledSave={!canSave}
         regions={regions}
         communes={communes}
         onSelectRegion={(_, v) => { 
-          setForm(f => ({...f, regionId: v?.name ?? "", communeId:""})); 
+          // En modo edición, no limpiar communeId y countyCode
+          if (mode === "edit") {
+            setForm(f => ({...f, regionId: v?.name ?? ""}));
+          } else {
+            setForm(f => ({...f, regionId: v?.name ?? "", communeId:"", countyCode: ""}));
+          }
           setCommunes(v?.communes ?? []); 
         }}
-        onSelectCommune={(_, v) => { setForm(f => ({...f, communeId: v?.name ?? ""})); }}
+        onSelectCommune={(_, v) => { setForm(f => ({...f, communeId: v?.name ?? "", countyCode: v?.code ?? ""})); }}
       />
 
       <DetailDialog open={openDetail} row={detailRow} onClose={() => setOpenDetail(false)} />

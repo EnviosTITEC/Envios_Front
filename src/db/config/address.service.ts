@@ -51,8 +51,8 @@ export async function createAddress(userId: string, data: NewAddress): Promise<A
   const body = {
     street: data.street,
     number: data.number,
-    comune: data.communeId,
-    region: data.regionId,
+    communeId: data.communeId,
+    regionId: data.regionId,
     countyCode: data.countyCode,
     postalCode: data.postalCode?.trim() || "",
     references: data.references?.trim() || "",
@@ -102,8 +102,8 @@ export async function updateAddress(id: number | string, data: Partial<NewAddres
     const body = {
       street: data.street,
       number: data.number,
-      comune: data.communeId,
-      region: data.regionId,
+      communeId: data.communeId,
+      regionId: data.regionId,
       countyCode: data.countyCode,
       postalCode: data.postalCode?.trim() || "",
       references: data.references?.trim() || "",

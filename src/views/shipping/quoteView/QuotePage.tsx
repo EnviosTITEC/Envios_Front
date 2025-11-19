@@ -262,7 +262,7 @@ export default function QuotePage() {
 
   /* -------------------------------- Render -------------------------------- */
   return (
-    <Box sx={{ px: { xs: 2, md: 0 }, py: 1 }}>
+    <Box sx={{ px: { xs: 2, md: 0 }, py: 1, mb: 30 }}>
       <PageCard>
         <SectionHeader
           title="Cotización"
@@ -282,7 +282,7 @@ export default function QuotePage() {
             item
             xs={12}
             md={6}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+            sx={{ display: "flex", flexDirection: "column", gap: 4 }}
           >
             <Card variant="outlined" sx={{ p: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
@@ -303,12 +303,12 @@ export default function QuotePage() {
                 onOpenNew={() => setOpenAddressModal(true)}
                 originCode={ORIGIN_CODE}
                 destLabel={
-                  selectedAddress ? (selectedAddress as any).communeId || (selectedAddress as any).commune : "—"
+                  selectedAddress ? (selectedAddress as any).countyCode || (selectedAddress as any).communeId || (selectedAddress as any).commune || "—" : "—"
                 }
               />
             </Card>
 
-            <Card variant="outlined" sx={{ p: 2 }}>
+            <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700 }}>
                 Parámetros del envío
               </Typography>

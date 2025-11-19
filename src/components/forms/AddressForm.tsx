@@ -111,16 +111,22 @@ export default function AddressForm({
               isOptionEqualToValue={(o, v) => o.code === v.code}
               getOptionLabel={(opt) => opt?.name ?? ""}
               getOptionKey={(option) => option.code}
-              value={communes.find((c) => c.code === value.countyCode) ?? null}
+              value={
+                communes.find((c) => c.code === value.countyCode) ?? 
+                (value.countyCode ? { name: value.communeId, code: value.countyCode } : null)
+              }
               onChange={(e, c) => {
                 // avisamos al hook (para postal)
                 onSelectCommune(e, c);
                 // y actualizamos **nombre** + **código Chilexpress**
-                onChange({
-                  ...value,
-                  communeId: c?.name ?? "",
-                  countyCode: c?.code, // 👈 AQUÍ guardamos el código Chilexpress
-                });
+                // Solo actualizar si se selecciona algo, no limpiar si es null
+                if (c) {
+                  onChange({
+                    ...value,
+                    communeId: c.name,
+                    countyCode: c.code,
+                  });
+                }
               }}
               slotProps={{
                 popper: { sx: { zIndex: 1500 } },
