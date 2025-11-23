@@ -1,5 +1,6 @@
 // src/views/shipping/Quote/QuotePage.tsx
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Grid,
@@ -8,6 +9,10 @@ import {
   Alert,
   Button,
   CircularProgress,
+  List,
+  ListItemButton,
+  ListItemText,
+  Chip,
 } from "@mui/material";
 
 import PageCard from "../../../components/primitives/PageCard";
@@ -17,9 +22,10 @@ import NavigationButtons from "../../../components/common/NavigationButtons";
 import { useAddresses } from "./hooks/useAddresses";
 import { useQuote } from "./hooks/useQuote";
 import { useChilexpress } from "./hooks/useChilexpress";
+import { useCart } from "./hooks/useCart";
+import { useLocalDeliveries } from "./hooks/useLocalDeliveries";
 
 import { labelOfAddress } from "../../../utils/addressHelpers";
-import ParamsGrid from "./ParamsGrid";
 import AddressPicker from "./AddressPicker";
 import QuoteList from "./QuoteList";
 
@@ -42,15 +48,13 @@ type AddressFormValue = {
 
 type AddressOption = { label: string; value: AddressRow };
 
-/* ----------------------------- Helpers locales --------------------------- */
-const toNum = (v: string) => Number.parseFloat(v || "0");
-
-/* ======================================================================== */
 export default function QuotePage() {
-  const userId = "1";
+  const navigate = useNavigate();
 
-  // data
-  const { items: addresses, addAddress } = useAddresses(userId);
+  const { cart, calculatePackageDimensions, calculateTotalCartDimensions, calculateTotalDeclaredWorth } = useCart();
+  const { addDelivery } = useLocalDeliveries();
+
+  const { items: addresses, addAddress } = useAddresses("1");
   const {
     quotes,
     selected,
@@ -59,14 +63,12 @@ export default function QuotePage() {
     error,
     setError,
     getQuote,
-    createDeliveryFrom,
   } = useQuote();
   const {
     regions: chilexpressRegions,
     loadCoverageAreas,
   } = useChilexpress();
 
-  // address
   const [selectedAddress, setSelectedAddress] = useState<AddressRow | null>(
     null,
   );
@@ -82,6 +84,7 @@ export default function QuotePage() {
     postalCode: "",
     references: "",
   });
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   // Cargar datos de Chilexpress al montar
   useEffect(() => {
@@ -107,44 +110,21 @@ export default function QuotePage() {
     })();
   }, [chilexpressRegions]);
 
-  // package
-  const [weight, setWeight] = useState("");
-  const [height, setHeight] = useState("");
-  const [width, setWidth] = useState("");
-  const [length, setLength] = useState("");
-  const [declared, setDeclared] = useState("");
-
-  const m3 = useMemo(() => {
-    const h = toNum(height),
-      w = toNum(width),
-      l = toNum(length);
-    if (!h || !w || !l) return "";
-    return ((h * w * l) / 1_000_000).toFixed(4);
-  }, [height, width, length]);
-
   const addressOptions: AddressOption[] = addresses.map((a) => ({
     label: labelOfAddress(a),
     value: a,
   }));
 
-  // validaciones derivadas
-  const hasDims = height !== "" && width !== "" && length !== "";
-  const isFormValid =
-    !!selectedAddress && toNum(weight) > 0 && hasDims && toNum(declared) > 0;
-
-  // confirm dialog
-  const [openConfirm, setOpenConfirm] = useState(false);
+  // validaciones derivadas: solo necesitamos dirección destino ahora
+  const isFormValid = cart.items.length > 0 && !!selectedAddress;
 
   /* --------------------------- Acciones principales ----------------------- */
   async function onQuote() {
-    if (!isFormValid || !selectedAddress) {
-      setError(
-        "Completa correctamente los parámetros y selecciona una dirección.",
-      );
+    if (cart.items.length === 0 || !selectedAddress) {
+      setError("Asegúrate de tener productos en el carrito y selecciona una dirección destino.");
       return;
     }
 
-    // Necesitamos el countyCode Chilexpress de la dirección de destino
     const destCountyCode = selectedAddress.countyCode;
     if (!destCountyCode) {
       setError(
@@ -155,25 +135,28 @@ export default function QuotePage() {
 
     setError("");
 
-    // Enviar cotización con códigos Chilexpress
+    // Cotizar carrito completo
+    const dimensions = calculateTotalCartDimensions();
+    const totalDeclaredWorth = calculateTotalDeclaredWorth();
+
     getQuote({
-      originCountyCode: ORIGIN_CODE,      // Código Chilexpress de bodega
-      destinationCountyCode: destCountyCode, // Código Chilexpress de destino
+      originCountyCode: ORIGIN_CODE,
+      destinationCountyCode: destCountyCode,
       package: {
-        weight: String(toNum(weight)), // kg
-        height: String(toNum(height)), // cm
-        width: String(toNum(width)),   // cm
-        length: String(toNum(length)), // cm
+        weight: String(dimensions.weight),
+        height: String(dimensions.height),
+        width: String(dimensions.width),
+        length: String(dimensions.length),
       },
-      productType: 3, // 1 = Documento, 3 = Encomienda
+      productType: 3,
       contentType: 1,
-      declaredWorth: String(toNum(declared)),
-      deliveryTime: 0, // 0 = Todos
+      declaredWorth: String(totalDeclaredWorth),
+      deliveryTime: 0,
     });
   }
 
   async function onCreateDelivery() {
-    if (!selected || !selectedAddress) return;
+    if (!selected || !selectedAddress || cart.items.length === 0) return;
 
     const destCountyCode = selectedAddress.countyCode;
     if (!destCountyCode) {
@@ -181,27 +164,42 @@ export default function QuotePage() {
       return;
     }
 
-    await createDeliveryFrom({
-      addressId: (selectedAddress as any)._id ?? selectedAddress.id,
-      quoteServiceCode: selected.serviceCode,
-      quotePrice: selected.price,
-      package: {
-        weight: String(toNum(weight)),
-        height: String(toNum(height)),
-        width: String(toNum(width)),
-        length: String(toNum(length)),
-      },
-      meta: {
-        carrier: "CHILEXPRESS",
-        speed: selected.serviceName,
-        declaredWorth: String(toNum(declared)),
-        originCountyCode: ORIGIN_CODE,
-        destinationCountyCode: destCountyCode,
-      },
-    });
+    try {
+      const dimensions = calculateTotalCartDimensions();
 
-    setOpenConfirm(false);
-    setSelected(null);
+      // Guardar en localStorage y backend
+      const delivery = await addDelivery({
+        status: "Preparando",
+        shippingInfo: {
+          estimatedCost: Number(selected.price),
+          serviceType: selected.serviceName || "EXPRESS",
+          originAddressId: "addr_origin_123",
+          destinationAddressId: (selectedAddress as any)._id ?? selectedAddress.id,
+        },
+        items: cart.items,
+        package: {
+          weight: Number(dimensions.weight),
+          length: Number(dimensions.length),
+          width: Number(dimensions.width),
+          height: Number(dimensions.height),
+        },
+        selectedOption: selected,
+        destinationAddress: selectedAddress,
+      });
+
+      if (delivery?.trackingNumber) {
+        setError("");
+        alert(`¡Envío creado exitosamente!\nTracking: ${delivery.trackingNumber}`);
+        setOpenConfirm(false);
+        setSelected(null);
+        // Redirigir a Mis envíos con timestamp para forzar refetch
+        setTimeout(() => {
+          navigate(`/shipping/shipments?refresh=${Date.now()}`);
+        }, 500);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Error al crear envío");
+    }
   }
 
   /* ------------------------ Handlers modal de dirección ------------------- */
@@ -312,22 +310,32 @@ export default function QuotePage() {
 
             <Card variant="outlined" sx={{ p: 1.5, mb: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
-                Parámetros del envío
+                Productos del carrito
               </Typography>
 
-              <ParamsGrid
-                weight={weight}
-                setWeight={setWeight}
-                height={height}
-                setHeight={setHeight}
-                width={width}
-                setWidth={setWidth}
-                length={length}
-                setLength={setLength}
-                declared={declared}
-                setDeclared={setDeclared}
-                volumeM3={m3}
-              />
+              <List sx={{ width: "100%", bgcolor: "background.paper" }}>
+                {cart.items.map((item) => (
+                  <Box key={item.productId} sx={{ 
+                    p: 1,
+                    mb: 1,
+                    border: "1px solid #e0e0e0",
+                    borderRadius: 1,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                  }}>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {item.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 0.5 }}>
+                        Precio: ${item.price.toLocaleString()} | Peso: {item.weight || 0.5}kg
+                      </Typography>
+                    </Box>
+                    <Chip label={`x${item.quantity}`} size="small" variant="outlined" />
+                  </Box>
+                ))}
+              </List>
 
               <Button
                 variant="contained"
@@ -340,7 +348,7 @@ export default function QuotePage() {
                 {loading ? (
                   <CircularProgress size={18} />
                 ) : (
-                  "Calcular cotización"
+                  "Cotizar carrito completo"
                 )}
               </Button>
             </Card>
@@ -389,12 +397,21 @@ export default function QuotePage() {
         onClose={() => setOpenConfirm(false)}
         address={selectedAddress}
         quote={selected}
-        packageData={{
-          weight,
-          height,
-          width,
-          length,
-          volume: m3,
+        packageData={cart.items.length > 0 ? (() => {
+          const dimensions = calculateTotalCartDimensions();
+          return {
+            weight: String(dimensions.weight),
+            height: String(dimensions.height),
+            width: String(dimensions.width),
+            length: String(dimensions.length),
+            volume: String(dimensions.weight * dimensions.length * dimensions.width / dimensions.height),
+          };
+        })() : {
+          weight: "0",
+          height: "0",
+          width: "0",
+          length: "0",
+          volume: "0",
         }}
         creating={false}
         onConfirm={onCreateDelivery}

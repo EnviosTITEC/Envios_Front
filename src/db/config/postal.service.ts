@@ -3,7 +3,6 @@
 import type {
   QuoteRequest,
   QuoteOption,
-  DeliveryCreate,
 } from "../../types/postal";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
@@ -53,18 +52,33 @@ export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> 
 
 /**
  * Crear delivery después de cotización confirmada
+ * Llama a: POST /api/deliveries/create
  */
-export async function createDelivery(
-  payload: DeliveryCreate,
-): Promise<{ id: string }> {
-  const res = await fetch(`${API_BASE}/deliveries`, {
+export async function createDelivery(payload: any): Promise<any> {
+  const res = await fetch(`${API_BASE}/deliveries/create`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    console.warn("[createDelivery] mock por HTTP ", res.status);
-    return { id: crypto.randomUUID() };
+    const errorText = await res.text().catch(() => "");
+    throw new Error(errorText || `Error al crear envío (${res.status})`);
+  }
+  return res.json();
+}
+
+/**
+ * Obtener todos los envíos de un usuario
+ * Llama a: GET /api/deliveries/user/{userId}
+ */
+export async function getUserDeliveries(userId: string): Promise<any[]> {
+  const res = await fetch(`${API_BASE}/deliveries/user/${userId}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(errorText || `Error al obtener envíos (${res.status})`);
   }
   return res.json();
 }

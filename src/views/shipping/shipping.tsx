@@ -16,8 +16,8 @@ export default function Shipping() {
   const tiles = [
     { title: "Mis direcciones", desc: "Gestiona tus direcciones", path: "/shipping/addresses", Icon: HomeIcon, swatch: "info", clickable: true },
     { title: "Cotización", desc: "Calcula el costo de tus envíos", path: "/shipping/quote", Icon: CalculateIcon, swatch: "success", clickable: true },
-    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", path: "/shipping/shipments", Icon: LocalShippingIcon, swatch: "warning", clickable: false },
-    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", path: "/shipping/tracking", Icon: SearchIcon, swatch: "secondary", clickable: false },
+    { title: "Mis envíos", desc: "Consulta y gestiona tus envíos", path: "/shipping/shipments", Icon: LocalShippingIcon, swatch: "warning", clickable: true },
+    { title: "Seguimiento", desc: "Rastrea el envío con el código de tracking", path: "/shipping/tracking", Icon: SearchIcon, swatch: "secondary", clickable: true },
   ] as const;
 
   const handleCardClick = (tile: typeof tiles[number]) => {
