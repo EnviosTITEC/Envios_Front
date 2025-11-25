@@ -73,7 +73,7 @@ import axios from 'axios';
 
 // Crear instancia de axios para comunicarse con el backend de NestJS
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3100/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
@@ -439,7 +439,7 @@ Los colores principales del tema son:
 
 1. Configura la URL base en el archivo `.env`:
    ```
-   VITE_API_URL=http://localhost:3000/api
+  VITE_API_URL=http://localhost:3100/api
    ```
 
 2. Crea un servicio para interactuar con el backend:

@@ -5,7 +5,7 @@ import type {
   QuoteOption,
 } from "../../types/postal";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3100/api";
 
 /**
  * Cotizar envío con Chilexpress
@@ -38,11 +38,10 @@ export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> 
   const mapped: QuoteOption[] = options.map((o: any) => ({
     serviceCode: o.serviceCode ?? o.serviceTypeCode ?? "",
     serviceName: o.serviceName ?? o.serviceDescription ?? "Servicio Chilexpress",
-    price:
-      o.finalPrice ??
-      o.totalAmountWithTaxes ??
-      o.shippingPrice ??
-      0,
+    // Chilexpress responde a veces con 'serviceValue' como string
+    price: Number(
+      o.finalPrice ?? o.totalAmountWithTaxes ?? o.shippingPrice ?? o.serviceValue ?? 0
+    ) || 0,
     currency: "CLP",
     etaDescription: o.deliveryTypeName ?? o.deliveryEstimate ?? "",
   }));

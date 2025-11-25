@@ -120,7 +120,7 @@ export default function Tracking() {
     try {
       // Primero intentar en el backend
       const response = await fetch(
-        `http://localhost:3000/api/deliveries/tracking/${trackingInput.trim()}`
+        `http://localhost:3100/api/deliveries/tracking/${trackingInput.trim()}`
       );
 
       if (response.ok) {

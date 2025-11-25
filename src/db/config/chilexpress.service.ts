@@ -17,7 +17,7 @@ export interface ChilexpressCoverageArea {
   coverageAreaName: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3100/api";
 
 // Cache para regiones
 let _regionsCache: ChilexpressRegion[] | null = null;
