@@ -5,7 +5,7 @@ import type { QuoteOption } from "../../../types/postal";
 export default function QuoteList(props: {
   quotes: QuoteOption[];
   selected: QuoteOption | null;
-  onSelect: (q: QuoteOption) => void;
+  onSelect: (q: QuoteOption | null) => void;
   onConfirm: () => void;
   disabledConfirm?: boolean;
 }) {
@@ -21,15 +21,26 @@ export default function QuoteList(props: {
 
   return (
     <>
-      <RadioGroup value={selected?.serviceCode ?? ""} onChange={(_, v) => onSelect(quotes.find(q => q.serviceCode === v)!)} >
+      <RadioGroup
+        value={selected?.serviceCode ?? ""}
+        onChange={(_, v) => {
+          const found = quotes.find((q) => q.serviceCode === v);
+          if (found) onSelect(found);
+          else onSelect(null);
+        }}
+      >
         {quotes.map((q) => (
-          <Box key={q.serviceCode} sx={(t) => ({
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            p: 1.1, mb: 1, borderRadius: 2,
-            border: `1.5px solid ${selected?.serviceCode === q.serviceCode ? t.palette.primary.main : t.palette.divider}`,
-            bgcolor: selected?.serviceCode === q.serviceCode ? "rgba(25,103,210,.06)" : "background.paper",
-            cursor: "pointer"
-          })} onClick={() => onSelect(q)}>
+          <Box
+            key={q.serviceCode}
+            sx={(t) => ({
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              p: 1.1, mb: 1, borderRadius: 2,
+              border: `1.5px solid ${selected?.serviceCode === q.serviceCode ? t.palette.primary.main : t.palette.divider}`,
+              bgcolor: selected?.serviceCode === q.serviceCode ? "rgba(25,103,210,.06)" : "background.paper",
+              cursor: "pointer"
+            })}
+            onClick={() => onSelect(q)}
+          >
             <FormControlLabel
               value={q.serviceCode}
               control={<Radio />}
