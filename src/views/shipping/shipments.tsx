@@ -87,6 +87,7 @@ export default function Shipments() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [selectedStatusValue, setSelectedStatusValue] = useState<string>("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
     async function loadDeliveries() {
@@ -317,7 +318,8 @@ export default function Shipments() {
         }
       }
 
-      alert("Estado actualizado correctamente");
+      setSuccessMsg("Estado actualizado correctamente");
+      setTimeout(() => setSuccessMsg(""), 2500);
     } catch (error) {
       console.error("Error en la solicitud PATCH:", error);
       alert("Hubo un problema al actualizar el estado");
@@ -563,6 +565,9 @@ export default function Shipments() {
         </DialogTitle>
         <Divider />
         <DialogContent sx={{ mt: 2 }}>
+          {successMsg && (
+            <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>
+          )}
           {selectedDelivery && (
             <Stack spacing={2}>
               <Box>
