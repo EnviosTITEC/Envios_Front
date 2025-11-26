@@ -322,14 +322,7 @@ export default function Tracking() {
                       </Typography>
                     </Box>
 
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Dimensiones
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {delivery.package && typeof delivery.package.length === 'number' ? delivery.package.length : "—"} L x {delivery.package && typeof delivery.package.width === 'number' ? delivery.package.width : "—"} W x {delivery.package && typeof delivery.package.height === 'number' ? delivery.package.height : "—"} H cm
-                      </Typography>
-                    </Box>
+
 
                     <Box>
                       <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
@@ -368,57 +361,7 @@ export default function Tracking() {
                 </Card>
               </Grid>
 
-              {/* Columna derecha - Productos */}
-              <Grid item xs={12} md={6} sx={{ minWidth: 0 }}>
-                <Card variant="outlined" sx={{ p: 3 }}>
-                  {delivery.items && delivery.items.length > 0 ? (
-                    <>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
-                        Productos ({delivery.items.length})
-                      </Typography>
-                      <Stack spacing={1}>
-                        {delivery.items.map((item, idx) => (
-                          <Box
-                            key={idx}
-                            sx={{
-                              p: 1.25,
-                              bgcolor: "background.default",
-                              borderRadius: 1,
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              gap: 1.5,
-                            }}
-                          >
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                {item.name || "Producto"}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
-                              >
-                                {/* Solo mostrar cantidad, peso y dimensiones, sin precio */}
-                                Cantidad: {typeof item.quantity === 'number' ? item.quantity : "—"}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{ color: "text.secondary", display: "block", mt: 0.25 }}
-                              >
-                                Peso: {typeof item.weight === 'number' ? item.weight : "—"} kg, Dim: {typeof item.length === 'number' ? item.length : "—"}L x {typeof item.width === 'number' ? item.width : "—"}W x {typeof item.height === 'number' ? item.height : "—"}H
-                              </Typography>
-                            </Box>
-                          </Box>
-                        ))}
-                      </Stack>
-                    </>
-                  ) : (
-                    <Typography color="text.secondary" variant="body2">
-                      Sin productos asociados
-                    </Typography>
-                  )}
-                </Card>
-              </Grid>
+
             </Grid>
           )}
 
