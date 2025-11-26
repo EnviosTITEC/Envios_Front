@@ -81,7 +81,7 @@ export function useLocalDeliveries() {
         estimatedCost: Number(delivery.shippingInfo?.estimatedCost ?? 0),
       },
       declaredWorth: Number(
-        delivery.declaredWorth ??
+        (delivery as any).declaredWorth ??
           (delivery.items || []).reduce((sum: number, item: any) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0)
       ),
       notes: (delivery as any).notes ?? "Creado desde frontend",

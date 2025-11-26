@@ -273,7 +273,8 @@ export default function Shipments() {
     setUpdating(true);
     try {
       // Actualizar en backend
-      const response = await fetch(`http://localhost:3100/api/deliveries/tracking/${selectedDelivery.trackingNumber}`, {
+      const API_BASE = import.meta.env.VITE_API_URL || "/api";
+      const response = await fetch(`${API_BASE}/deliveries/tracking/${selectedDelivery.trackingNumber}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

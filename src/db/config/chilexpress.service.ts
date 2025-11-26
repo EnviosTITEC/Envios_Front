@@ -17,7 +17,7 @@ export interface ChilexpressCoverageArea {
   coverageAreaName: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3100/api";
+const API_BASE = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.trim() !== "") ? import.meta.env.VITE_API_URL : "/api";
 
 // Cache para regiones
 let _regionsCache: ChilexpressRegion[] | null = null;
@@ -70,7 +70,12 @@ export async function getChilexpressCoverageAreas(
   }
 
   try {
-    const url = new URL(`${API_BASE}/geo/chilexpress/coverage-areas`);
+    // Si API_BASE no es una URL absoluta, usar window.location.origin como base
+    let endpoint = API_BASE;
+    if (!/^https?:\/\//.test(API_BASE)) {
+      endpoint = window.location.origin + (API_BASE.startsWith("/") ? API_BASE : "/" + API_BASE);
+    }
+    const url = new URL(`${endpoint}/geo/chilexpress/coverage-areas`);
     url.searchParams.append("regionCode", regionCode);
     url.searchParams.append("type", type.toString());
 
