@@ -27,31 +27,55 @@ import ErrorIcon from "@mui/icons-material/Error";
 import PageCard from "../../components/primitives/PageCard";
 import SectionHeader from "../../components/primitives/SectionHeader";
 import NavigationButtons from "../../components/common/NavigationButtons";
-import { getUserDeliveries } from "../../db/config/postal.service";
+import { getUserDeliveries, deleteDelivery } from "../../db/config/postal.service";
+import { MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 
 const USER_ID = "1"; // Usuario actual
 
+// Define los estados posibles
+const DELIVERY_STATUSES = {
+  PREPARANDO: "Preparando",
+  EN_TRANSITO: "EnTransito",
+  ENVIADO: "Enviado",
+  ENTREGADO: "Entregado",
+  CANCELADO: "Cancelado",
+  DEVUELTO: "Devuelto",
+};
+
 interface DeliveryItem {
-  _id: string;
+  id: string;
   trackingNumber: string;
   status: string;
-  shippingInfo: {
+  shippingInfo?: {
     estimatedCost: number;
     serviceType: string;
     originAddressId: string;
     destinationAddressId: string;
   };
-  items: any[];
-  package: {
+  package?: {
     weight: number;
     length: number;
     width: number;
     height: number;
   };
-  createdAt: string;
-  selectedProduct?: any;
-  selectedOption?: any;
-  destinationAddress?: any;
+  items: { name: string; quantity: number; price: number }[];
+  selectedOption?: {
+    serviceName: string;
+    etaDescription?: string;
+  };
+  destinationAddress?: {
+    street: string;
+    number: string;
+    communeName: string;
+    regionId: string;
+  };
+  createdAt?: string;
+}
+
+// Definir un tipo para los errores
+interface ApiError {
+  response?: { status: number };
+  message?: string;
 }
 
 export default function Shipments() {
@@ -61,6 +85,8 @@ export default function Shipments() {
   const [error, setError] = useState("");
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryItem | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [selectedStatusValue, setSelectedStatusValue] = useState<string>("");
 
   useEffect(() => {
     async function loadDeliveries() {
@@ -88,11 +114,12 @@ export default function Shipments() {
             // Combinar API + local (evitar duplicados)
             setDeliveries([...localDels, ...data]);
           }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (apiError) {
           // Si falla la API, solo mostrar locales
           console.log("API no disponible, usando deliveries locales");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error:", err);
       } finally {
         setLoading(false);
@@ -107,11 +134,15 @@ export default function Shipments() {
       case "entregado":
         return <CheckCircleIcon sx={{ color: "#4caf50", fontSize: 28 }} />;
       case "enviado":
-        return <LocalShippingIcon sx={{ color: "#2196f3", fontSize: 28 }} />;
+      case "entransito":
+      case "en tránsito":
+        return <LocalShippingIcon sx={{ color: "#00bcd4", fontSize: 28, animation: 'shake 0.7s infinite' }} />;
       case "preparando":
         return <PendingIcon sx={{ color: "#ffc107", fontSize: 28 }} />;
       case "cancelado":
         return <ErrorIcon sx={{ color: "#f44336", fontSize: 28 }} />;
+      case "devuelto":
+        return <ErrorIcon sx={{ color: "#9c27b0", fontSize: 28 }} />;
       default:
         return <PendingIcon sx={{ color: "#9e9e9e", fontSize: 28 }} />;
     }
@@ -122,11 +153,15 @@ export default function Shipments() {
       case "preparando":
         return "warning";
       case "enviado":
+      case "entransito":
+      case "en tránsito":
         return "info";
       case "entregado":
         return "success";
       case "cancelado":
         return "error";
+      case "devuelto":
+        return "secondary";
       default:
         return "default";
     }
@@ -137,11 +172,15 @@ export default function Shipments() {
       case "preparando":
         return 25;
       case "enviado":
+      case "entransito":
+      case "en tránsito":
         return 75;
       case "entregado":
         return 100;
       case "cancelado":
         return 0;
+      case "devuelto":
+        return 10;
       default:
         return 0;
     }
@@ -149,6 +188,7 @@ export default function Shipments() {
 
   const handleOpenDetails = (delivery: DeliveryItem) => {
     setSelectedDelivery(delivery);
+    setSelectedStatusValue((delivery.status || "").toLowerCase());
     setDetailsOpen(true);
   };
 
@@ -159,19 +199,130 @@ export default function Shipments() {
 
   const handleDeleteDelivery = () => {
     if (!selectedDelivery) return;
-    
-    // Eliminar del localStorage
-    const stored = localStorage.getItem("local_deliveries");
-    if (stored) {
-      const parsed = JSON.parse(stored) as DeliveryItem[];
-      const filtered = parsed.filter(d => d._id !== selectedDelivery._id);
-      localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-      
-      // Actualizar estado
-      setDeliveries(deliveries.filter(d => d._id !== selectedDelivery._id));
-      
-      // Cerrar modal
+    // Si el envío tiene id local, solo eliminar localmente
+    if (String(selectedDelivery.id).startsWith("local_")) {
+      const stored = localStorage.getItem("local_deliveries");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as DeliveryItem[];
+          const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+          localStorage.setItem("local_deliveries", JSON.stringify(filtered));
+          setDeliveries(deliveries.filter(d => d.id !== selectedDelivery.id));
+        } catch (e) {
+          console.error("Error parsing local_deliveries on delete:", e);
+        }
+      }
       handleCloseDetails();
+      return;
+    }
+
+    // Si no es local, intentar eliminar en backend y en localStorage
+    (async () => {
+      try {
+        await deleteDelivery(selectedDelivery.id);
+
+        // eliminar del localStorage también (si existe)
+        const stored = localStorage.getItem("local_deliveries");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as DeliveryItem[];
+            const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+            localStorage.setItem("local_deliveries", JSON.stringify(filtered));
+          } catch (e) {
+            console.error("Error parsing local_deliveries after backend delete:", e);
+          }
+        }
+
+        // Actualizar estado local
+        setDeliveries((prev) => prev.filter(d => d.id !== selectedDelivery.id));
+        handleCloseDetails();
+      } catch (err: unknown) {
+        const status = (err as ApiError)?.response?.status;
+        if (status === 404) {
+          setError("No existe el envío en el servidor (404). Se eliminará localmente.");
+          // Eliminar local igualmente
+          const stored = localStorage.getItem("local_deliveries");
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored) as DeliveryItem[];
+              const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+              localStorage.setItem("local_deliveries", JSON.stringify(filtered));
+              setDeliveries((prev) => prev.filter(d => d.id !== selectedDelivery.id));
+            } catch (e) {
+              console.error("Error parsing local_deliveries on 404 delete:", e);
+            }
+          }
+          handleCloseDetails();
+        } else if (status && status >= 500) {
+          setError("Error del servidor. Intente más tarde.");
+        } else {
+          setError((err as ApiError)?.message || "Error al eliminar envío");
+        }
+      }
+    })();
+  };
+
+  // Actualizar la función handleUpdateStatus para usar el tracking ID y el nuevo endpoint
+  const handleUpdateStatus = async (newStatus?: string) => {
+    if (!selectedDelivery || !selectedDelivery.trackingNumber) {
+      console.error("No se encontró el envío seleccionado o su número de tracking.");
+      return;
+    }
+
+    setUpdating(true);
+    try {
+      // Actualizar en backend
+      const response = await fetch(`http://localhost:3100/api/deliveries/tracking/${selectedDelivery.trackingNumber}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ estado: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al actualizar el estado del envío");
+      }
+
+      const updatedDelivery = await response.json();
+
+      // Actualizar el estado local del envío seleccionado
+      setSelectedDelivery((prev) => ({
+        ...prev!,
+        status: updatedDelivery.estado as DeliveryItem["status"],
+      }));
+
+      // Actualizar la lista de envíos en memoria
+      setDeliveries((prev) =>
+        prev.map((delivery) =>
+          delivery.trackingNumber === selectedDelivery.trackingNumber
+            ? { ...delivery, status: updatedDelivery.estado }
+            : delivery
+        )
+      );
+
+      // Actualizar en localStorage si corresponde
+      const stored = localStorage.getItem("local_deliveries");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as DeliveryItem[];
+          const updated = parsed.map((d) =>
+            d.trackingNumber === selectedDelivery.trackingNumber
+              ? { ...d, status: updatedDelivery.estado }
+              : d
+          );
+          localStorage.setItem("local_deliveries", JSON.stringify(updated));
+        } catch (e) {
+          console.error("Error actualizando estado en localStorage:", e);
+        }
+      }
+
+      alert("Estado actualizado correctamente");
+    } catch (error) {
+      console.error("Error en la solicitud PATCH:", error);
+      alert("Hubo un problema al actualizar el estado");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -208,7 +359,7 @@ export default function Shipments() {
         ) : (
           <Grid container spacing={3} sx={{ mt: -3, mb: 3}}>
             {deliveries.map((delivery) => (
-              <Grid item xs={12} key={delivery._id}>
+              <Grid item xs={12} key={delivery.id}>
                 <Card
                   sx={{
                     borderRadius: 2,
@@ -337,16 +488,22 @@ export default function Shipments() {
                           height: 6,
                           borderRadius: 3,
                           backgroundColor: "#e0e0e0",
+                          transition: 'all 0.7s cubic-bezier(.4,2,.6,1)',
                           "& .MuiLinearProgress-bar": {
                             borderRadius: 3,
+                            transition: 'all 0.7s cubic-bezier(.4,2,.6,1)',
                             backgroundColor:
                               delivery.status?.toLowerCase() === "entregado"
                                 ? "#4caf50"
-                                : delivery.status?.toLowerCase() === "enviado"
-                                  ? "#2196f3"
-                                  : delivery.status?.toLowerCase() === "preparando"
-                                    ? "#ffc107"
-                                    : "#9e9e9e",
+                                : delivery.status?.toLowerCase() === "enviado" || delivery.status?.toLowerCase() === "entransito" || delivery.status?.toLowerCase() === "en tránsito"
+                                  ? "#00bcd4"
+                                : delivery.status?.toLowerCase() === "preparando"
+                                  ? "#ffc107"
+                                : delivery.status?.toLowerCase() === "cancelado"
+                                  ? "#f44336"
+                                : delivery.status?.toLowerCase() === "devuelto"
+                                  ? "#9c27b0"
+                                  : "#9e9e9e",
                           },
                         }}
                       />
@@ -438,6 +595,23 @@ export default function Shipments() {
                     sx={{ fontWeight: 600 }}
                   />
                 </Box>
+                <Box sx={{ mt: 1 }}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="status-select-label">Actualizar estado</InputLabel>
+                    <Select
+                      labelId="status-select-label"
+                      label="Actualizar estado"
+                      value={selectedStatusValue}
+                      onChange={(e) => setSelectedStatusValue(String(e.target.value))}
+                    >
+                      <MenuItem value={DELIVERY_STATUSES.PREPARANDO}>{DELIVERY_STATUSES.PREPARANDO}</MenuItem>
+                      <MenuItem value={DELIVERY_STATUSES.EN_TRANSITO}>{DELIVERY_STATUSES.EN_TRANSITO}</MenuItem>
+                      <MenuItem value={DELIVERY_STATUSES.ENTREGADO}>{DELIVERY_STATUSES.ENTREGADO}</MenuItem>
+                      <MenuItem value={DELIVERY_STATUSES.CANCELADO}>{DELIVERY_STATUSES.CANCELADO}</MenuItem>
+                      <MenuItem value={DELIVERY_STATUSES.DEVUELTO}>{DELIVERY_STATUSES.DEVUELTO}</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
               </Box>
 
               <Box>
@@ -482,8 +656,8 @@ export default function Shipments() {
                 <Typography variant="caption" sx={{ color: "text.secondary" }}>
                   Artículos ({selectedDelivery.items?.length || 0})
                 </Typography>
-                {selectedDelivery.items?.map((item: any, idx: number) => (
-                  <Typography key={idx} variant="body2" sx={{ mt: 0.5 }}>
+                {selectedDelivery.items?.map((item, idx) => (
+                  <Typography key={`${item.name}-${idx}`} variant="body2" sx={{ mt: 0.5 }}>
                     • {item.name} (Qty: {item.quantity}) - ${item.price?.toLocaleString() || "—"}
                   </Typography>
                 ))}
@@ -546,11 +720,20 @@ export default function Shipments() {
           >
             Eliminar
           </Button>
-          <Button onClick={handleCloseDetails} variant="contained" fullWidth>
+          <Button
+            onClick={() => handleUpdateStatus(selectedStatusValue)}
+            variant="contained"
+            disabled={updating || selectedStatusValue === (selectedDelivery?.status || "").toLowerCase()}
+          >
+            {updating ? <CircularProgress size={18} color="inherit" /> : "Actualizar estado"}
+          </Button>
+          <Button onClick={handleCloseDetails} variant="outlined" fullWidth>
             Cerrar
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Animación para el icono de EnTransito ahora está en index.css */}
     </Box>
   );
 }
