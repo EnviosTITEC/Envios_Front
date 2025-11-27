@@ -11,7 +11,6 @@ const ShippingLayout = Loadable(lazy(() => import("../layouts/shipping/ShippingL
 
 /* ---------------- General pages ---------------- */
 const Error = Loadable(lazy(() => import("../views/authentication/Error")));
-const Home = Loadable(lazy(() => import("../views/home/Home")));
 const Login = Loadable(lazy(() => import("../views/authentication/Login")));
 const Register = Loadable(lazy(() => import("../views/authentication/Register")));
 const ResetPass = Loadable(lazy(() => import("../views/authentication/ResetPass")));
@@ -51,8 +50,7 @@ const Router = [
     path: "/",
     element: <MainLayout />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "home", element: <Home /> },
+      { index: true, element: <Navigate to="/shipping" /> },
 
       // Shipping module
       {

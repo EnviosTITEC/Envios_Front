@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Box,
-  Stack,
   Card,
   CardContent,
   Typography,
@@ -199,18 +198,32 @@ export default function Shipments() {
   };
 
   const handleDeleteDelivery = () => {
-    if (!selectedDelivery) return;
+    if (!selectedDelivery) {
+      setError("No se pudo identificar el envío. Por favor intente nuevamente.");
+      return;
+    }
+
+    // Determinar el ID correcto - puede ser 'id' o '_id' o 'trackingNumber'
+    const deliveryId = (selectedDelivery as any)._id || selectedDelivery.id || selectedDelivery.trackingNumber;
+    if (!deliveryId) {
+      setError("No se pudo identificar el envío. Por favor intente nuevamente.");
+      return;
+    }
+
     // Si el envío tiene id local, solo eliminar localmente
-    if (String(selectedDelivery.id).startsWith("local_")) {
+    if (String(deliveryId).startsWith("local_")) {
       const stored = localStorage.getItem("local_deliveries");
       if (stored) {
         try {
           const parsed = JSON.parse(stored) as DeliveryItem[];
-          const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+          const filtered = parsed.filter(d => d.id !== deliveryId);
           localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-          setDeliveries(deliveries.filter(d => d.id !== selectedDelivery.id));
+          setDeliveries(deliveries.filter(d => d.id !== deliveryId));
+          setSuccessMsg("Envío eliminado exitosamente");
+          setTimeout(() => setSuccessMsg(""), 3000);
         } catch (e) {
           console.error("Error parsing local_deliveries on delete:", e);
+          setError("Error al eliminar el envío");
         }
       }
       handleCloseDetails();
@@ -220,14 +233,14 @@ export default function Shipments() {
     // Si no es local, intentar eliminar en backend y en localStorage
     (async () => {
       try {
-        await deleteDelivery(selectedDelivery.id);
+        await deleteDelivery(deliveryId);
 
         // eliminar del localStorage también (si existe)
         const stored = localStorage.getItem("local_deliveries");
         if (stored) {
           try {
             const parsed = JSON.parse(stored) as DeliveryItem[];
-            const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+            const filtered = parsed.filter(d => d.id !== deliveryId);
             localStorage.setItem("local_deliveries", JSON.stringify(filtered));
           } catch (e) {
             console.error("Error parsing local_deliveries after backend delete:", e);
@@ -235,7 +248,9 @@ export default function Shipments() {
         }
 
         // Actualizar estado local
-        setDeliveries((prev) => prev.filter(d => d.id !== selectedDelivery.id));
+        setDeliveries((prev) => prev.filter(d => (d.id !== deliveryId && (d as any)._id !== deliveryId)));
+        setSuccessMsg("Envío eliminado exitosamente");
+        setTimeout(() => setSuccessMsg(""), 3000);
         handleCloseDetails();
       } catch (err: unknown) {
         const status = (err as ApiError)?.response?.status;
@@ -246,9 +261,9 @@ export default function Shipments() {
           if (stored) {
             try {
               const parsed = JSON.parse(stored) as DeliveryItem[];
-              const filtered = parsed.filter(d => d.id !== selectedDelivery.id);
+              const filtered = parsed.filter(d => d.id !== deliveryId);
               localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-              setDeliveries((prev) => prev.filter(d => d.id !== selectedDelivery.id));
+              setDeliveries((prev) => prev.filter(d => (d.id !== deliveryId && (d as any)._id !== deliveryId)));
             } catch (e) {
               console.error("Error parsing local_deliveries on 404 delete:", e);
             }
@@ -561,164 +576,222 @@ export default function Shipments() {
 
       {/* Modal de detalles */}
       <Dialog open={detailsOpen} onClose={handleCloseDetails} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
+        <DialogTitle sx={{ fontWeight: 700, pb: 2, fontSize: "1.4rem" }}>
           Detalles del Envío
         </DialogTitle>
-        <Divider />
         <DialogContent sx={{ mt: 2 }}>
           {successMsg && (
             <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>
           )}
           {selectedDelivery && (
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {/* Título + Tracking Number */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="caption" sx={{ color: "text.secondary", mb: 1 }}>
                   Número de Tracking
                 </Typography>
                 <Typography
                   sx={{
                     fontFamily: "monospace",
-                    fontWeight: 600,
-                    color: "#1976d2",
                     fontSize: "1.1rem",
+                    color: "primary.main",
+                    mb: 3,
+                    fontWeight: 600,
                   }}
                 >
                   {selectedDelivery.trackingNumber}
                 </Typography>
-              </Box>
 
-              <Divider />
-
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Estado Actual
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                  <Chip
-                    label={selectedDelivery.status || "Desconocido"}
-                    color={getStatusColor(selectedDelivery.status)}
-                    size="small"
-                    sx={{ fontWeight: 600 }}
-                  />
+                {/* Estado + Actualizar dropdown */}
+                <Box sx={{ display: "flex", gap: 3, alignItems: "flex-start" }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", mb: 1 }}>
+                      Estado Actual
+                    </Typography>
+                    <Chip
+                      label={selectedDelivery.status || "Desconocido"}
+                      color={getStatusColor(selectedDelivery.status)}
+                      size="small"
+                      sx={{ fontWeight: 600, display: "block", mt: 0.5 }}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", mb: 1 }}>
+                      Actualizar estado
+                    </Typography>
+                    <FormControl fullWidth size="small" sx={{ maxWidth: "100%" }}>
+                      <InputLabel id="status-select-label">Cambiar estado</InputLabel>
+                      <Select
+                        labelId="status-select-label"
+                        label="Cambiar estado"
+                        value={selectedStatusValue}
+                        onChange={(e) => setSelectedStatusValue(String(e.target.value))}
+                      >
+                        <MenuItem value={DELIVERY_STATUSES.PREPARANDO}>{DELIVERY_STATUSES.PREPARANDO}</MenuItem>
+                        <MenuItem value={DELIVERY_STATUSES.EN_TRANSITO}>{DELIVERY_STATUSES.EN_TRANSITO}</MenuItem>
+                        <MenuItem value={DELIVERY_STATUSES.ENTREGADO}>{DELIVERY_STATUSES.ENTREGADO}</MenuItem>
+                        <MenuItem value={DELIVERY_STATUSES.CANCELADO}>{DELIVERY_STATUSES.CANCELADO}</MenuItem>
+                        <MenuItem value={DELIVERY_STATUSES.DEVUELTO}>{DELIVERY_STATUSES.DEVUELTO}</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
                 </Box>
-                <Box sx={{ mt: 1 }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="status-select-label">Actualizar estado</InputLabel>
-                    <Select
-                      labelId="status-select-label"
-                      label="Actualizar estado"
-                      value={selectedStatusValue}
-                      onChange={(e) => setSelectedStatusValue(String(e.target.value))}
-                    >
-                      <MenuItem value={DELIVERY_STATUSES.PREPARANDO}>{DELIVERY_STATUSES.PREPARANDO}</MenuItem>
-                      <MenuItem value={DELIVERY_STATUSES.EN_TRANSITO}>{DELIVERY_STATUSES.EN_TRANSITO}</MenuItem>
-                      <MenuItem value={DELIVERY_STATUSES.ENTREGADO}>{DELIVERY_STATUSES.ENTREGADO}</MenuItem>
-                      <MenuItem value={DELIVERY_STATUSES.CANCELADO}>{DELIVERY_STATUSES.CANCELADO}</MenuItem>
-                      <MenuItem value={DELIVERY_STATUSES.DEVUELTO}>{DELIVERY_STATUSES.DEVUELTO}</MenuItem>
-                    </Select>
-                  </FormControl>
+              </Box>
+
+              {/* Info Grid 2x2 */}
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Transportista
+                    </Typography>
+                    <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                      —
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Tipo de Servicio
+                    </Typography>
+                    <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                      {selectedDelivery.shippingInfo?.serviceType || "—"}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Costo Estimado
+                    </Typography>
+                    <Typography sx={{ fontWeight: 600, fontSize: "1.1rem", color: "primary.main", mt: 0.5 }}>
+                      ${selectedDelivery.shippingInfo?.estimatedCost?.toLocaleString() || "—"}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Peso
+                    </Typography>
+                    <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                      {selectedDelivery.package?.weight || "—"} kg
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Package Dimensions */}
+              <Box>
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, mb: 1.5 }}>
+                  Dimensiones del Paquete
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={3}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Peso
+                      </Typography>
+                      <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                        {selectedDelivery.package?.weight || "—"} kg
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Largo
+                      </Typography>
+                      <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                        {selectedDelivery.package?.length || "—"} cm
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Ancho
+                      </Typography>
+                      <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                        {selectedDelivery.package?.width || "—"} cm
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6} sm={3}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                        Alto
+                      </Typography>
+                      <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                        {selectedDelivery.package?.height || "—"} cm
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Dates */}
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Fecha de Creación
+                    </Typography>
+                    <Typography sx={{ fontWeight: 500, mt: 0.5, fontSize: "0.95rem" }}>
+                      {selectedDelivery.createdAt
+                        ? new Date(selectedDelivery.createdAt).toLocaleDateString("es-CL", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "—"}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                      Entrega Estimada
+                    </Typography>
+                    <Typography sx={{ fontWeight: 500, mt: 0.5, fontSize: "0.95rem" }}>
+                      {selectedDelivery.selectedOption?.etaDescription || "—"}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Destination Address */}
+              {selectedDelivery.destinationAddress && (
+                <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                    Dirección de Destino
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    {selectedDelivery.destinationAddress.street} {selectedDelivery.destinationAddress.number}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 0.5 }}>
+                    {selectedDelivery.destinationAddress.communeName} ({selectedDelivery.destinationAddress.regionId})
+                  </Typography>
                 </Box>
-              </Box>
+              )}
 
+              {/* Items */}
               <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Servicio
-                </Typography>
-                <Typography sx={{ fontWeight: 500 }}>
-                  {selectedDelivery.shippingInfo?.serviceType || "—"}
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Costo Estimado
-                </Typography>
-                <Typography sx={{ fontWeight: 600, fontSize: "1.2rem", color: "#2e7d32" }}>
-                  ${selectedDelivery.shippingInfo?.estimatedCost?.toLocaleString() || "—"}
-                </Typography>
-              </Box>
-
-              <Divider />
-
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Paquete
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  <strong>Peso:</strong> {selectedDelivery.package?.weight || "—"} kg
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Largo:</strong> {selectedDelivery.package?.length || "—"} cm
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Ancho:</strong> {selectedDelivery.package?.width || "—"} cm
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Alto:</strong> {selectedDelivery.package?.height || "—"} cm
-                </Typography>
-              </Box>
-
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
                   Artículos ({selectedDelivery.items?.length || 0})
                 </Typography>
                 {selectedDelivery.items?.map((item, idx) => (
-                  <Typography key={`${item.name}-${idx}`} variant="body2" sx={{ mt: 0.5 }}>
+                  <Typography key={`${item.name}-${idx}`} variant="body2" sx={{ mt: 0.75 }}>
                     • {item.name} (Qty: {item.quantity}) - ${item.price?.toLocaleString() || "—"}
                   </Typography>
                 ))}
               </Box>
-
-              {selectedDelivery.selectedOption && (
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Opción de Envío Seleccionada
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 0.5, fontWeight: 600 }}>
-                    {selectedDelivery.selectedOption.serviceName || "—"}
-                  </Typography>
-                  {selectedDelivery.selectedOption.etaDescription && (
-                    <Typography variant="body2" sx={{ mt: 0.25 }}>
-                      {selectedDelivery.selectedOption.etaDescription}
-                    </Typography>
-                  )}
-                </Box>
-              )}
-
-              {selectedDelivery.destinationAddress && (
-                <Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    Dirección de Destino
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 0.5, display: "flex", flexWrap: "wrap" }}>
-                    {selectedDelivery.destinationAddress.street} {selectedDelivery.destinationAddress.number}, {selectedDelivery.destinationAddress.communeName} ({selectedDelivery.destinationAddress.regionId})
-                  </Typography>
-                </Box>
-              )}
-
-              <Box>
-                <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                  Fecha de Creación
-                </Typography>
-                <Typography sx={{ fontWeight: 500 }}>
-                  {selectedDelivery.createdAt
-                    ? new Date(selectedDelivery.createdAt).toLocaleDateString("es-CL", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                      })
-                    : "—"}
-                </Typography>
-              </Box>
-            </Stack>
+            </Box>
           )}
         </DialogContent>
         <Divider />
-        <DialogActions sx={{ p: 2, gap: 1 }}>
+        <DialogActions sx={{ p: 2, gap: 1, justifyContent: "flex-start" }}>
           <Button 
             onClick={handleDeleteDelivery} 
             variant="outlined" 
@@ -729,12 +802,10 @@ export default function Shipments() {
           <Button
             onClick={() => handleUpdateStatus(selectedStatusValue)}
             variant="contained"
+            color="primary"
             disabled={updating || selectedStatusValue === (selectedDelivery?.status || "").toLowerCase()}
           >
             {updating ? <CircularProgress size={18} color="inherit" /> : "Actualizar estado"}
-          </Button>
-          <Button onClick={handleCloseDetails} variant="outlined" fullWidth>
-            Cerrar
           </Button>
         </DialogActions>
       </Dialog>

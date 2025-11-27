@@ -7,9 +7,9 @@ const base = getPulgaTheme();
 // Color primario (ajústalo si quieres otro)
 base.palette.primary = {
   ...base.palette.primary,
-  main: "#528275",
-  light: "#6e9a8e",
-  dark: "#3a5e55",
+  main: "#22c55e",
+  light: "#4ade80",
+  dark: "#16a34a",
   contrastText: "#ffffff",
 };
 
