@@ -1,7 +1,7 @@
 //src/db/config/address.service.ts
 import type { AddressRow, NewAddress } from "../../types/address";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3100/api";
 
 /* --- LocalStorage fallback helpers (useful cuando el backend no está) --- */
 const storageKey = (userId: string) => `envios_addresses_${userId}`;

@@ -10,8 +10,6 @@ import {
   Button,
   CircularProgress,
   List,
-  ListItemButton,
-  ListItemText,
   Chip,
 } from "@mui/material";
 
@@ -51,7 +49,7 @@ type AddressOption = { label: string; value: AddressRow };
 export default function QuotePage() {
   const navigate = useNavigate();
 
-  const { cart, calculatePackageDimensions, calculateTotalCartDimensions, calculateTotalDeclaredWorth } = useCart();
+  const { cart, calculateTotalCartDimensions, calculateTotalDeclaredWorth } = useCart();
   const { addDelivery } = useLocalDeliveries();
 
   const { items: addresses, addAddress } = useAddresses("1");
