@@ -1,7 +1,9 @@
-import { Box, useTheme, alpha, IconButton, Drawer } from "@mui/material";
+import { Box, useTheme, alpha, IconButton, Drawer, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
 import { useState } from "react";
 import logo from "../../assets/EII_logo.svg";
 
@@ -9,10 +11,22 @@ export default function Navbar() {
   const theme = useTheme();
   const navigate = useNavigate();
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado simple - integrar con auth real después
 
   const navItems = [
     { label: "Envíos", path: "/shipping" },
   ];
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    navigate("/auth/login");
+    setSideMenuOpen(false);
+  };
+
+  const handleLogin = () => {
+    navigate("/auth/login");
+    setSideMenuOpen(false);
+  };
 
   return (
     <Box
@@ -128,6 +142,34 @@ export default function Navbar() {
               </Box>
             ))}
           </Box>
+
+          {/* Spacer */}
+          <Box sx={{ flex: 1 }} />
+
+          {/* Login/Logout Button */}
+          {!isLoggedIn ? (
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              startIcon={<LoginIcon />}
+              onClick={handleLogin}
+              sx={{ mt: 2 }}
+            >
+              Ingresar
+            </Button>
+          ) : (
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+              sx={{ mt: 2 }}
+            >
+              Salir
+            </Button>
+          )}
         </Box>
       </Drawer>
     </Box>
