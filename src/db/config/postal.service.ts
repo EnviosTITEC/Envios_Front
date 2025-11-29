@@ -17,7 +17,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3100/api";
  * Obténgalos de: GET /geo/chilexpress/coverage-areas?regionCode=...
  */
 export async function quoteShipping(body: QuoteRequest): Promise<QuoteOption[]> {
-  const res = await fetch(`${API_BASE}/carriers/quote`, {
+  const res = await fetch(`${API_BASE}/quotes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
