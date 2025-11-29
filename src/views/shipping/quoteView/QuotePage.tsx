@@ -171,8 +171,10 @@ export default function QuotePage() {
         shippingInfo: {
           estimatedCost: Number(selected.price),
           serviceType: selected.serviceName || "EXPRESS",
-          originAddressId: "addr_origin_123",
-          destinationAddressId: (selectedAddress as any)._id ?? selectedAddress.id,
+          originAddressId: ORIGIN_CODE,
+          destinationAddressId: selectedAddress.countyCode || "",
+          street: selectedAddress.street,
+          number: selectedAddress.number,
         },
         items: cart.items,
         package: {

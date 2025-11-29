@@ -11,6 +11,8 @@ export interface LocalDelivery {
     serviceType: string;
     originAddressId: string;
     destinationAddressId: string;
+    street?: string;
+    number?: string;
   };
   items: any[];
   package: {
@@ -55,6 +57,8 @@ export function useLocalDeliveries() {
         carrierName: "Chilexpress",
         serviceType: delivery.shippingInfo?.serviceType || delivery.selectedOption?.serviceName || "EXPRESS",
         estimatedCost: Number(delivery.shippingInfo?.estimatedCost ?? 0),
+        street: delivery.shippingInfo?.street || delivery.destinationAddress?.street || "",
+        number: delivery.shippingInfo?.number || delivery.destinationAddress?.number || "",
       },
       declaredWorth: Number(
         (delivery as any).declaredWorth ??

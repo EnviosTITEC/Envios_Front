@@ -38,7 +38,13 @@ export function useAddresses(userId: string) {
       setLoading(true);
       try {
         const addresses = await fetchAddresses(userId);
-        setItems(addresses && addresses.length > 0 ? addresses : MOCK_ADDRESSES);
+        // Mapear para asegurar que siempre tengan street y number
+        const mappedAddresses = (addresses || []).map(addr => ({
+          ...addr,
+          street: addr.street || addr.calle || "",
+          number: addr.number || addr.numero || "",
+        }));
+        setItems(mappedAddresses && mappedAddresses.length > 0 ? mappedAddresses : MOCK_ADDRESSES);
       } catch (err) {
         // Fallback a direcciones mock si la API falla
         console.log("Using mock addresses as fallback");

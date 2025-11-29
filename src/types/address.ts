@@ -3,6 +3,9 @@ export interface AddressRow {
   id: number | string;
   street: string;
   number: string;
+  // Soporte para claves en español
+  calle?: string;
+  numero?: string;
 
   regionId: string;      // nombre región elegida
   communeId: string;     // nombre comuna elegida

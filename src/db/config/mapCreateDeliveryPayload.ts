@@ -9,7 +9,15 @@ export interface CreateDeliveryRequestFrontend {
   items?: Array<{ productId: string; name: string; quantity: number; price:number }>;
   paymentId?: string;
   package?: { weight:number; length:number; width:number; height:number };
-  shippingInfo?: { originAddressId:string; destinationAddressId:string; carrierName:string; serviceType:string; estimatedCost:number };
+  shippingInfo?: {
+    originAddressId: string;
+    destinationAddressId: string;
+    carrierName: string;
+    serviceType: string;
+    estimatedCost: number;
+    street?: string;
+    number?: string;
+  };
   declaredWorth?: number;
   notes?: string;
 }
@@ -22,7 +30,15 @@ export interface CreateDeliveryRequestBackend {
   pago_id: string;
   articulo_carrito: Array<{ producto_id:string; nombre:string; cantidad:number; precio:number }>;
   paquete?: { peso:number; largo:number; ancho:number; alto:number };
-  informacion_envio?: { origen_direccion_id:string; destino_direccion_id:string; nombre_transportista:string; tipo_servicio:string; costo_estimado:number };
+  informacion_envio?: {
+    origen_direccion_id: string;
+    destino_direccion_id: string;
+    nombre_transportista: string;
+    tipo_servicio: string;
+    costo_estimado: number;
+    calle?: string;
+    numero?: string;
+  };
   valor_declarado?: number;
   notas?: string;
 }
@@ -53,6 +69,8 @@ export function mapCreateDeliveryPayload(front: CreateDeliveryRequestFrontend): 
       nombre_transportista: String(front.shippingInfo.carrierName ?? ""),
       tipo_servicio: String(front.shippingInfo.serviceType ?? ""),
       costo_estimado: Number(front.shippingInfo.estimatedCost ?? 0),
+      calle: front.shippingInfo.street ?? "",
+      numero: front.shippingInfo.number ?? "",
     } : undefined,
     valor_declarado: front.declaredWorth !== undefined ? Number(front.declaredWorth) : undefined,
     notas: front.notes,
