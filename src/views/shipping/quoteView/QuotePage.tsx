@@ -165,7 +165,7 @@ export default function QuotePage() {
     try {
       const dimensions = calculateTotalCartDimensions();
 
-      // Guardar en localStorage y backend
+
       const delivery = await addDelivery({
         status: "Preparando",
         shippingInfo: {

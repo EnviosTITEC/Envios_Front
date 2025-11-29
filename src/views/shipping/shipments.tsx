@@ -29,7 +29,7 @@ import NavigationButtons from "../../components/common/NavigationButtons";
 import { getUserDeliveries, deleteDelivery } from "../../db/config/postal.service";
 import { MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 
-const USER_ID = "1"; // Usuario actual
+const USER_ID = "user_456"; // Usuario actual
 
 // Define los estados posibles
 const DELIVERY_STATUSES = {
@@ -93,39 +93,15 @@ export default function Shipments() {
       try {
         setLoading(true);
         setError("");
-        
-        // Leer primero del localStorage
-        const stored = localStorage.getItem("local_deliveries");
-        let localDels: DeliveryItem[] = [];
-        if (stored) {
-          try {
-            localDels = JSON.parse(stored) as DeliveryItem[];
-          } catch (e) {
-            console.error("Error parsing localStorage:", e);
-          }
-        }
-        
-        setDeliveries(localDels);
-        
-        // Intentar obtener del API como complemento
-        try {
-          const data = await getUserDeliveries(USER_ID);
-          if (data && data.length > 0) {
-            // Combinar API + local (evitar duplicados)
-            setDeliveries([...localDels, ...data]);
-          }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (apiError) {
-          // Si falla la API, solo mostrar locales
-          console.log("API no disponible, usando deliveries locales");
-        }
+        const data = await getUserDeliveries(USER_ID);
+        setDeliveries(data || []);
       } catch (err: unknown) {
-        console.error("Error:", err);
+        setError("No se pudieron cargar los envíos desde la base de datos.");
+        setDeliveries([]);
       } finally {
         setLoading(false);
       }
     }
-
     loadDeliveries();
   }, [searchParams]);
 
@@ -197,85 +173,35 @@ export default function Shipments() {
     setSelectedDelivery(null);
   };
 
-  const handleDeleteDelivery = () => {
+  const handleDeleteDelivery = async () => {
     if (!selectedDelivery) {
       setError("No se pudo identificar el envío. Por favor intente nuevamente.");
       return;
     }
-
-    // Determinar el ID correcto - puede ser 'id' o '_id' o 'trackingNumber'
     const deliveryId = (selectedDelivery as any)._id || selectedDelivery.id || selectedDelivery.trackingNumber;
     if (!deliveryId) {
       setError("No se pudo identificar el envío. Por favor intente nuevamente.");
       return;
     }
-
-    // Si el envío tiene id local, solo eliminar localmente
-    if (String(deliveryId).startsWith("local_")) {
-      const stored = localStorage.getItem("local_deliveries");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as DeliveryItem[];
-          const filtered = parsed.filter(d => d.id !== deliveryId);
-          localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-          setDeliveries(deliveries.filter(d => d.id !== deliveryId));
-          setSuccessMsg("Envío eliminado exitosamente");
-          setTimeout(() => setSuccessMsg(""), 3000);
-        } catch (e) {
-          console.error("Error parsing local_deliveries on delete:", e);
-          setError("Error al eliminar el envío");
-        }
-      }
+    try {
+      await deleteDelivery(deliveryId);
+      // Recargar desde la base de datos
+      const data = await getUserDeliveries(USER_ID);
+      setDeliveries(data || []);
+      setSuccessMsg("Envío eliminado exitosamente");
+      setTimeout(() => setSuccessMsg(""), 3000);
       handleCloseDetails();
-      return;
-    }
-
-    // Si no es local, intentar eliminar en backend y en localStorage
-    (async () => {
-      try {
-        await deleteDelivery(deliveryId);
-
-        // eliminar del localStorage también (si existe)
-        const stored = localStorage.getItem("local_deliveries");
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored) as DeliveryItem[];
-            const filtered = parsed.filter(d => d.id !== deliveryId);
-            localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-          } catch (e) {
-            console.error("Error parsing local_deliveries after backend delete:", e);
-          }
-        }
-
-        // Actualizar estado local
-        setDeliveries((prev) => prev.filter(d => (d.id !== deliveryId && (d as any)._id !== deliveryId)));
-        setSuccessMsg("Envío eliminado exitosamente");
-        setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err: unknown) {
+      const status = (err as ApiError)?.response?.status;
+      if (status === 404) {
+        setError("No existe el envío en el servidor (404).");
         handleCloseDetails();
-      } catch (err: unknown) {
-        const status = (err as ApiError)?.response?.status;
-        if (status === 404) {
-          setError("No existe el envío en el servidor (404). Se eliminará localmente.");
-          // Eliminar local igualmente
-          const stored = localStorage.getItem("local_deliveries");
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored) as DeliveryItem[];
-              const filtered = parsed.filter(d => d.id !== deliveryId);
-              localStorage.setItem("local_deliveries", JSON.stringify(filtered));
-              setDeliveries((prev) => prev.filter(d => (d.id !== deliveryId && (d as any)._id !== deliveryId)));
-            } catch (e) {
-              console.error("Error parsing local_deliveries on 404 delete:", e);
-            }
-          }
-          handleCloseDetails();
-        } else if (status && status >= 500) {
-          setError("Error del servidor. Intente más tarde.");
-        } else {
-          setError((err as ApiError)?.message || "Error al eliminar envío");
-        }
+      } else if (status && status >= 500) {
+        setError("Error del servidor. Intente más tarde.");
+      } else {
+        setError((err as ApiError)?.message || "Error al eliminar envío");
       }
-    })();
+    }
   };
 
   // Actualizar la función handleUpdateStatus para usar el tracking ID y el nuevo endpoint
@@ -318,21 +244,7 @@ export default function Shipments() {
         )
       );
 
-      // Actualizar en localStorage si corresponde
-      const stored = localStorage.getItem("local_deliveries");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as DeliveryItem[];
-          const updated = parsed.map((d) =>
-            d.trackingNumber === selectedDelivery.trackingNumber
-              ? { ...d, status: updatedDelivery.estado }
-              : d
-          );
-          localStorage.setItem("local_deliveries", JSON.stringify(updated));
-        } catch (e) {
-          console.error("Error actualizando estado en localStorage:", e);
-        }
-      }
+
 
       setSuccessMsg("Estado actualizado correctamente");
       setTimeout(() => setSuccessMsg(""), 2500);
@@ -646,7 +558,7 @@ export default function Shipments() {
                       Transportista
                     </Typography>
                     <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
-                      —
+                      Chilexpress
                     </Typography>
                   </Box>
                 </Grid>

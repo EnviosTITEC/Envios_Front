@@ -99,44 +99,7 @@ export default function Tracking() {
   const [delivery, setDelivery] = useState<DeliveryDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [source, setSource] = useState<"backend" | "local" | null>(null);
 
-  const searchLocalStorage = (trackingNumber: string): DeliveryDetails | null => {
-    try {
-      const stored = localStorage.getItem("local_deliveries");
-      if (!stored) return null;
-      const deliveries = JSON.parse(stored) as any[];
-      const found = deliveries.find((d) => d.trackingNumber === trackingNumber);
-      if (found) {
-        // selectedOption y destinationAddress pueden estar presentes solo en local
-        const selectedOption = (found as any).selectedOption || {};
-        const destinationAddress = (found as any).destinationAddress || {};
-        // Calcular fecha estimada de entrega (usar etaDescription o sumar 1 día)
-        let estimatedDeliveryDate = selectedOption.etaDescription;
-        if (!estimatedDeliveryDate && found.createdAt) {
-          const date = new Date(found.createdAt);
-          date.setDate(date.getDate() + 1);
-          estimatedDeliveryDate = date.toISOString();
-        }
-        return {
-          ...found,
-          carrierName: "Chilexpress",
-          serviceType: selectedOption.serviceName || found.shippingInfo?.serviceType || "—",
-          estimatedCost: selectedOption.price ?? found.shippingInfo?.estimatedCost ?? 0,
-          currency: selectedOption.currency || "CLP",
-          weight: found.package?.weight || 0,
-          dimensions: found.package,
-          estimatedDeliveryDate,
-          destinationAddress,
-          selectedOption,
-        };
-      }
-      return null;
-    } catch (e) {
-      console.error("Error searching localStorage:", e);
-      return null;
-    }
-  };
 
   const handleSearch = async () => {
     if (!trackingInput.trim()) {
@@ -147,39 +110,30 @@ export default function Tracking() {
     setLoading(true);
     setError("");
     setDelivery(null);
-    setSource(null);
+
 
     try {
-      // Primero intentar en el backend
+      // Solo buscar en el backend
       const API_BASE = import.meta.env.VITE_API_URL || "/api";
       const response = await fetch(
         `${API_BASE}/deliveries/tracking/${trackingInput.trim()}`
       );
-
       if (response.ok) {
         const data = await response.json();
         setDelivery(data);
-        setSource("backend");
+        setLoading(false);
+        return;
+      } else {
+        setError(
+          `No se encontró envío con el número de seguimiento "${trackingInput.trim()}"`
+        );
+        setLoading(false);
         return;
       }
     } catch (err) {
-      console.warn("Backend search failed, trying localStorage...", err);
-    }
-
-    // Si falla el backend, buscar en localStorage
-    const localDelivery = searchLocalStorage(trackingInput.trim());
-    if (localDelivery) {
-      setDelivery(localDelivery);
-      setSource("local");
+      setError("Error al buscar el envío en el backend.");
       setLoading(false);
-      return;
     }
-
-    // No encontrado en ningún lado
-    setError(
-      `No se encontró envío con el número de seguimiento "${trackingInput.trim()}"`
-    );
-    setLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -266,14 +220,7 @@ export default function Tracking() {
           {/* Mensaje de error */}
           {error && <Alert severity="error">{error}</Alert>}
 
-          {/* Badge de fuente */}
-          {source && (
-            <Alert severity={source === "backend" ? "success" : "warning"} sx={{ mb: 2 }}>
-              {source === "backend"
-                ? "Información obtenida del servidor"
-                : "Información obtenida localmente"}
-            </Alert>
-          )}
+
 
           {/* Resultado de búsqueda */}
           {delivery && (
@@ -499,7 +446,7 @@ export default function Tracking() {
           )}
 
           {/* Placeholder cuando no hay búsqueda */}
-          {!delivery && !loading && !error && !source && (
+          {!delivery && !loading && !error && (
             <Card variant="outlined" sx={{ p: 3, textAlign: "center" }}>
               <LocalShippingIcon
                 sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}

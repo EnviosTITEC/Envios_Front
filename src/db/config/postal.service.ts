@@ -93,7 +93,47 @@ export async function getUserDeliveries(userId: string): Promise<any[]> {
     const errorText = await res.text().catch(() => "");
     throw new Error(errorText || `Error al obtener envíos (${res.status})`);
   }
-  return res.json();
+  const deliveries = await res.json();
+  // Mapear cada envío a la estructura esperada por el frontend
+  return deliveries.map((d: any) => ({
+    _id: d._id,
+    trackingNumber: d.numero_seguimiento,
+    status: d.estado,
+    shippingInfo: {
+      estimatedCost: d.costo_estimado ?? d.costo ?? d.costo_estimado,
+      serviceType: d.tipo_servicio ?? d.shipping_service ?? d.serviceType,
+      originAddressId: d.origen_direccion_id,
+      destinationAddressId: d.destino_direccion_id,
+      carrierName: "Chilexpress",
+    },
+    items: (d.articulos || d.articulo_carrito || []).map((item: any) => ({
+      name: item.nombre ?? item.name ?? "",
+      quantity: item.cantidad ?? item.quantity ?? "",
+      price: item.precio ?? item.price ?? "",
+      productId: item.producto_id ?? item.productId ?? "",
+    })),
+    package: {
+      weight: d.peso ?? d.paquete?.peso ?? d.dimensiones?.peso,
+      length: d.paquete?.largo ?? d.dimensiones?.largo,
+      width: d.paquete?.ancho ?? d.dimensiones?.ancho,
+      height: d.paquete?.alto ?? d.dimensiones?.alto,
+    },
+    createdAt: d.createdAt,
+    selectedProduct: undefined,
+    selectedOption: {
+      etaDescription: d.fecha_entrega_estimada
+        ? new Date(d.fecha_entrega_estimada).toLocaleDateString("es-CL", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "—"
+    },
+    destinationAddress: d.destino_direccion ?? d.destinationAddress,
+    paymentId: d.pago_id ?? d.paymentId,
+    notes: d.notas,
+    declaredWorth: d.valor_declarado,
+  }));
 }
 
 /**
