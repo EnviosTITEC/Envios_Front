@@ -105,6 +105,8 @@ export async function getUserDeliveries(userId: string): Promise<any[]> {
       originAddressId: d.origen_direccion_id,
       destinationAddressId: d.destino_direccion_id,
       carrierName: "Chilexpress",
+      street: d.calle ?? d.street ?? "",
+      number: d.numero ?? d.number ?? "",
     },
     items: (d.articulos || d.articulo_carrito || []).map((item: any) => ({
       name: item.nombre ?? item.name ?? "",
@@ -129,7 +131,12 @@ export async function getUserDeliveries(userId: string): Promise<any[]> {
           })
         : "—"
     },
-    destinationAddress: d.destino_direccion ?? d.destinationAddress,
+    destinationAddress: {
+      street: d.calle ?? d.street ?? "",
+      number: d.numero ?? d.number ?? "",
+      communeName: d.comuna_id ?? d.communeName ?? "",
+      regionId: d.region_id ?? d.regionId ?? "",
+    },
     paymentId: d.pago_id ?? d.paymentId,
     notes: d.notas,
     declaredWorth: d.valor_declarado,

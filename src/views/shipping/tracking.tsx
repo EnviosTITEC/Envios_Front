@@ -248,7 +248,7 @@ export default function Tracking() {
                 
                 <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                   <Box>
-                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
                       Estado Actual
                     </Typography>
                     {getStatusConfig(delivery.status).icon ? (
@@ -421,16 +421,6 @@ export default function Tracking() {
               {/* Botones de acción */}
               <Divider sx={{ my: 3 }} />
               <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  sx={{
-                    fontWeight: 600,
-                    borderRadius: 2,
-                  }}
-                >
-                  Eliminar
-                </Button>
                 <Button
                   variant="outlined"
                   color="primary"

@@ -50,6 +50,8 @@ interface DeliveryItem {
     serviceType: string;
     originAddressId: string;
     destinationAddressId: string;
+    street?: string;
+    number?: string;
   };
   package?: {
     weight: number;
@@ -673,20 +675,27 @@ export default function Shipments() {
                 </Grid>
               </Grid>
 
-              {/* Destination Address */}
-              {selectedDelivery.destinationAddress && (
-                <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
-                    Dirección de Destino
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {selectedDelivery.destinationAddress.street} {selectedDelivery.destinationAddress.number}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 0.5 }}>
-                    {selectedDelivery.destinationAddress.communeName} ({selectedDelivery.destinationAddress.regionId})
-                  </Typography>
-                </Box>
-              )}
+              {/* Dirección de destino */}
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                  Destino dirección ID
+                </Typography>
+                <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                  {selectedDelivery.shippingInfo?.destinationAddressId || "—"}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", mt: 1 }}>
+                  Calle
+                </Typography>
+                <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                  {selectedDelivery.shippingInfo?.street || selectedDelivery.destinationAddress?.street || "—"}
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", mt: 1 }}>
+                  Número
+                </Typography>
+                <Typography sx={{ fontWeight: 500, mt: 0.5 }}>
+                  {selectedDelivery.shippingInfo?.number || selectedDelivery.destinationAddress?.number || "—"}
+                </Typography>
+              </Box>
 
               {/* Items */}
               <Box>
