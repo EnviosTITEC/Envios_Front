@@ -421,16 +421,6 @@ export default function Tracking() {
               {/* Botones de acción */}
               <Divider sx={{ my: 3 }} />
               <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  sx={{
-                    fontWeight: 600,
-                    borderRadius: 2,
-                  }}
-                >
-                  Cerrar
-                </Button>
               </Stack>
             </Card>
           )}
