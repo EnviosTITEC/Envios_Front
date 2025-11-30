@@ -15,6 +15,7 @@ import {
   DialogActions,
   Divider,
   LinearProgress,
+  Button,
 } from "@mui/material";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -158,7 +159,7 @@ export default function ShipmentsReadOnly() {
       <NavigationButtons />
       <PageCard>
         <SectionHeader
-          title="Mis Envíos (Solo Lectura)"
+          title="Mis Envíos"
           subtitle="Consulta el estado y detalles de todos tus envíos"
           actions={null}
         />
@@ -193,11 +194,17 @@ export default function ShipmentsReadOnly() {
                     overflow: "hidden",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                     transition: "all 0.3s ease",
+                    border: "2px solid #22c55e",
                     cursor: "pointer",
+                    "&:hover": {
+                      boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+                      transform: "translateY(-2px)",
+                      borderColor: "#16a34a",
+                    },
                   }}
                   onClick={() => handleOpenDetails(delivery)}
                 >
-                  <CardContent>
+                  <CardContent sx={{ p: 3, pb: 2 }}>
                     <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                       {getStatusIcon(delivery.status)}
                       <Typography variant="h6" sx={{ ml: 2 }}>
@@ -218,12 +225,34 @@ export default function ShipmentsReadOnly() {
                         </span>
                       ))}
                     </Typography>
+                  </CardContent>
+
+                  {/* Barra de progreso - fuera del CardContent para llegar a los bordes */}
+                  <Box sx={{ px: 3, py: 1.5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+                      <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                        Progreso de envío
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                        {getProgressValue(delivery.status)}%
+                      </Typography>
+                    </Box>
                     <LinearProgress
                       variant="determinate"
                       value={getProgressValue(delivery.status)}
-                      sx={{ mt: 2, height: 8, borderRadius: 5 }}
+                      sx={{
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: "#e8e8e8",
+                        transition: 'all 0.7s cubic-bezier(.4,2,.6,1)',
+                        "& .MuiLinearProgress-bar": {
+                          borderRadius: 4,
+                          transition: 'all 0.7s cubic-bezier(.4,2,.6,1)',
+                          backgroundColor: "#22c55e",
+                        },
+                      }}
                     />
-                  </CardContent>
+                  </Box>
                 </Card>
               </Grid>
             ))}
@@ -231,48 +260,126 @@ export default function ShipmentsReadOnly() {
         )}
 
         {/* Detalle del envío (solo lectura) */}
-        <Dialog open={detailsOpen} onClose={handleCloseDetails} maxWidth="sm" fullWidth>
-          <DialogTitle>Detalles del Envío</DialogTitle>
-          <DialogContent>
+        <Dialog open={detailsOpen} onClose={handleCloseDetails} maxWidth="sm" fullWidth
+          PaperProps={{
+            sx: { borderRadius: 2 }
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 700, fontSize: "1.3rem", pb: 2, borderBottom: "2px solid #22c55e" }}>
+            Detalles del Envío
+          </DialogTitle>
+          <DialogContent sx={{ pt: 3 }}>
             {selectedDelivery && (
               <Box>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Tracking: {selectedDelivery.trackingNumber}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  Estado: {selectedDelivery.status}
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  Productos:
-                  <ul>
+                {/* Tracking */}
+                <Box sx={{ mt: 2, mb: 3, p: 2, bgcolor: "#f5f5f5", borderRadius: 1.5, border: "1px solid #e0e0e0" }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+                    TRACKING
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: "#1976d2", fontFamily: "monospace", mt: 0.5 }}>
+                    {selectedDelivery.trackingNumber}
+                  </Typography>
+                </Box>
+
+                {/* Estado */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                    ESTADO
+                  </Typography>
+                  <Chip
+                    label={selectedDelivery.status}
+                    color={getStatusColor(selectedDelivery.status)}
+                    size="medium"
+                    icon={getStatusIcon(selectedDelivery.status)}
+                    sx={{ fontWeight: 600 }}
+                  />
+                </Box>
+
+                {/* Productos */}
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                    PRODUCTOS
+                  </Typography>
+                  <Box sx={{ pl: 2 }}>
                     {selectedDelivery.items?.map((item, idx) => (
-                      <li key={idx}>{item.name} x{item.quantity} (${item.price})</li>
+                      <Box key={idx} sx={{ mb: 1 }}>
+                        <Typography variant="body2">
+                          <strong>{item.name}</strong> x{item.quantity}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                          ${item.price} c/u
+                        </Typography>
+                      </Box>
                     ))}
-                  </ul>
-                </Typography>
+                  </Box>
+                </Box>
+
+                {/* Paquete */}
                 {selectedDelivery.package && (
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Paquete: {selectedDelivery.package.weight}kg, {selectedDelivery.package.length}x{selectedDelivery.package.width}x{selectedDelivery.package.height}cm
-                  </Typography>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                      PAQUETE
+                    </Typography>
+                    <Box sx={{ p: 2, bgcolor: "#f9f9f9", borderRadius: 1.5, border: "1px solid #e8e8e8" }}>
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        <strong>Peso:</strong> {selectedDelivery.package.weight} kg
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Dimensiones:</strong> {selectedDelivery.package.length}L × {selectedDelivery.package.width}A × {selectedDelivery.package.height}H cm
+                      </Typography>
+                    </Box>
+                  </Box>
                 )}
+
+                {/* Envío */}
                 {selectedDelivery.shippingInfo && (
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Envío: {selectedDelivery.shippingInfo.serviceType} - ${selectedDelivery.shippingInfo.estimatedCost}
-                  </Typography>
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                      ENVÍO
+                    </Typography>
+                    <Box sx={{ p: 2, bgcolor: "#f9f9f9", borderRadius: 1.5, border: "1px solid #e8e8e8" }}>
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        <strong>Servicio:</strong> {selectedDelivery.shippingInfo.serviceType}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+                        <strong>Costo:</strong> ${selectedDelivery.shippingInfo.estimatedCost?.toLocaleString() || "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
                 )}
+
+                {/* Fecha de creación */}
                 {selectedDelivery.createdAt && (
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Creado: {new Date(selectedDelivery.createdAt).toLocaleString()}
-                  </Typography>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                      CREADO
+                    </Typography>
+                    <Typography variant="body2">
+                      {new Date(selectedDelivery.createdAt).toLocaleDateString("es-CL", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Typography>
+                  </Box>
                 )}
               </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            <Box flex={1} />
-            <Box>
-              <button onClick={handleCloseDetails}>Cerrar</button>
-            </Box>
+          <DialogActions sx={{ p: 2, borderTop: "1px solid #e0e0e0" }}>
+            <Button
+              onClick={handleCloseDetails}
+              variant="contained"
+              sx={{ 
+                bgcolor: "#22c55e",
+                "&:hover": { bgcolor: "#16a34a" }
+              }}
+            >
+              Cerrar
+            </Button>
           </DialogActions>
         </Dialog>
       </PageCard>

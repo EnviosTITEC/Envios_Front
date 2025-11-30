@@ -316,7 +316,7 @@ export default function QuotePage() {
             md={6}
             sx={{ display: "flex", flexDirection: "column", gap: 3 }}
           >
-            <Card variant="outlined" sx={{ p: 1.5 }}>
+            <Card variant="outlined" sx={{ p: 1.5, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
               <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Dirección de destino
               </Typography>
@@ -340,7 +340,7 @@ export default function QuotePage() {
               />
             </Card>
 
-            <Card variant="outlined" sx={{ p: 1.5, mb: 2 }}>
+            <Card variant="outlined" sx={{ p: 1.5, mb: 2, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
               <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Productos del carrito
               </Typography>
@@ -393,7 +393,7 @@ export default function QuotePage() {
             md={6}
             sx={{ display: "flex", flexDirection: "column", mt: { xs: 0, md: 0 } }}
           >
-            <Card variant="outlined" sx={{ p: 1.5 }}>
+            <Card variant="outlined" sx={{ p: 1.5, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
               <Typography variant="subtitle2" sx={{ mb: 0.75, fontWeight: 700, fontSize: "0.95rem" }}>
                 Opciones disponibles
               </Typography>

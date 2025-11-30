@@ -60,13 +60,13 @@ export default function Shipping() {
               borderRadius: `${RADIUS}px !important`,
               overflow: "hidden",
               bgcolor: t.palette.background.paper,
-              border: `1px solid ${alpha(t.palette.primary.main, 0.08)}`,
+              border: `2px solid ${t.palette.primary.main}`,
               boxShadow: "0 2px 8px rgba(0,0,0,.05)",
               transition: "transform .16s ease, box-shadow .16s ease, border-color .16s ease",
               "&:hover": {
                 transform: "translateY(-2px)",
                 boxShadow: "0 8px 14px rgba(0,0,0,.08)",
-                borderColor: alpha(t.palette.primary.main, 0.14),
+                borderColor: t.palette.primary.main,
               },
               "&.MuiPaper-rounded": { borderRadius: `${RADIUS}px !important` },
             })}

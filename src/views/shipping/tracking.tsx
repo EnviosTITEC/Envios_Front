@@ -181,7 +181,7 @@ export default function Tracking() {
 
         <Stack direction="column" spacing={3} sx={{ mt: 4, pr: 0 }}>
           {/* Búsqueda */}
-          <Card variant="outlined" sx={{ p: 3 }}>
+          <Card variant="outlined" sx={{ p: 3, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
             <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>
               Ingresa tu número de seguimiento
             </Typography>
@@ -224,7 +224,7 @@ export default function Tracking() {
 
           {/* Resultado de búsqueda */}
           {delivery && (
-            <Card variant="outlined" sx={{ p: 4 }}>
+            <Card variant="outlined" sx={{ p: 4, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
               {/* Encabezado con seguimiento y estado */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
@@ -427,7 +427,7 @@ export default function Tracking() {
 
           {/* Placeholder cuando no hay búsqueda */}
           {!delivery && !loading && !error && (
-            <Card variant="outlined" sx={{ p: 3, textAlign: "center" }}>
+            <Card variant="outlined" sx={{ p: 3, textAlign: "center", border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
               <LocalShippingIcon
                 sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
               />
