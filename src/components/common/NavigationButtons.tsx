@@ -1,11 +1,9 @@
 import { Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import HomeIcon from "@mui/icons-material/Home";
 
 interface NavigationButtonsProps {
   showBackToShipping?: boolean;
-  showBackToHome?: boolean;
   sx?: any;
 }
 
@@ -15,7 +13,6 @@ interface NavigationButtonsProps {
  */
 export default function NavigationButtons({
   showBackToShipping = true,
-  showBackToHome = true,
   sx,
 }: NavigationButtonsProps) {
   const navigate = useNavigate();
@@ -49,28 +46,6 @@ export default function NavigationButtons({
         >
           Volver a Envíos
         </Button>
-      )}
-      
-      {showBackToHome && (
-        <Box sx={{ ml: "auto" }}>
-          <Button
-            variant="text"
-            startIcon={<HomeIcon />}
-            onClick={() => navigate("/")}
-            sx={{
-              textTransform: "none",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              color: "text.secondary",
-              "&:hover": {
-                color: "primary.main",
-                bgcolor: "transparent",
-              },
-            }}
-          >
-            Volver a PulgaShop
-          </Button>
-        </Box>
       )}
     </Box>
   );

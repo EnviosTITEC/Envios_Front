@@ -11,7 +11,6 @@ const ShippingLayout = Loadable(lazy(() => import("../layouts/shipping/ShippingL
 
 /* ---------------- General pages ---------------- */
 const Error = Loadable(lazy(() => import("../views/authentication/Error")));
-const Home = Loadable(lazy(() => import("../views/home/Home")));
 const Login = Loadable(lazy(() => import("../views/authentication/Login")));
 const Register = Loadable(lazy(() => import("../views/authentication/Register")));
 const ResetPass = Loadable(lazy(() => import("../views/authentication/ResetPass")));
@@ -21,6 +20,7 @@ const ShippingHome = Loadable(lazy(() => import("../views/shipping/shipping")));
 const Addresses = Loadable(lazy(() => import("../views/shipping/addressesView/AddressesPage")));
 const Quote = Loadable(lazy(() => import("../views/shipping/quoteView/QuotePage")));
 const Shipments = Loadable(lazy(() => import("../views/shipping/shipments")));
+const ShipmentsReadOnly = Loadable(lazy(() => import("../views/shipping/shipmentsReadOnly")));
 const Tracking = Loadable(lazy(() => import("../views/shipping/tracking")));
 const Carriers = Loadable(lazy(() => import("../views/shipping/carriers")));
 
@@ -51,8 +51,7 @@ const Router = [
     path: "/",
     element: <MainLayout />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "home", element: <Home /> },
+      { index: true, element: <Navigate to="/shipping" /> },
 
       // Shipping module
       {
@@ -62,7 +61,8 @@ const Router = [
           { index: true, element: <ShippingHome /> },
           { path: "addresses", element: <Addresses /> },
           { path: "quote", element: <Quote /> },
-          { path: "shipments", element: <Shipments /> },
+          { path: "shipments-admin", element: <Shipments /> },
+          { path: "shipments", element: <ShipmentsReadOnly /> },
           { path: "tracking", element: <Tracking /> },
           { path: "carriers", element: <Carriers /> },
         ],

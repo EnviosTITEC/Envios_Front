@@ -11,5 +11,8 @@ export function labelOfAddress(a: AddressRow | any): string {
   const commune = getCommune(a);
   const street = a.street ?? a.streetName ?? "";
   const number = a.number ?? "";
-  return `${street} ${number}${commune ? `, ${commune}` : ""}`;
+  // Si hay número, lo separamos con coma
+  let main = street;
+  if (number) main += `, ${number}`;
+  return `${main}${commune ? `, ${commune}` : ""}`;
 }

@@ -1,6 +1,8 @@
 // src/views/shipping/Quote/AddressPicker.tsx
 import { Stack, Autocomplete, TextField, Button, Chip } from "@mui/material";
+import { useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
+
 
 export default function AddressPicker(props: {
   options: { label: string; value: any }[];
@@ -11,6 +13,7 @@ export default function AddressPicker(props: {
   destLabel: string;
 }) {
   const { options, selected, onChange, onOpenNew, originCode, destLabel } = props;
+  const [inputValue, setInputValue] = useState("");
 
   return (
     <>
@@ -20,7 +23,21 @@ export default function AddressPicker(props: {
           options={options}
           getOptionLabel={(o) => o.label}
           value={selected}
-          onChange={(_, v) => onChange(v?.value || null)}
+          inputValue={inputValue}
+          onInputChange={(_, value) => setInputValue(value)}
+          onChange={(_, v) => {
+            if (v?.value) {
+              onChange(v.value);
+            } else if (typeof v?.label === "string") {
+              // Si el usuario escribe manualmente, parsear la dirección
+              const parts = v.label.split(",");
+              const street = parts[0]?.trim() || "";
+              const number = parts[1]?.trim() || "";
+              onChange({ street, number, label: v.label });
+            } else {
+              onChange(null);
+            }
+          }}
           slotProps={{
             popupIndicator: {
               sx: {

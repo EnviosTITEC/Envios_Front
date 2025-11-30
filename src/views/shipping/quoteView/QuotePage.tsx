@@ -22,6 +22,8 @@ import { useQuote } from "./hooks/useQuote";
 import { useChilexpress } from "./hooks/useChilexpress";
 import { useCart } from "./hooks/useCart";
 import { useLocalDeliveries } from "./hooks/useLocalDeliveries";
+import { saveQuoteRecord } from "../../../db/config/quotes.service";
+import { mapCreateDeliveryPayload } from "../../../db/config/mapCreateDeliveryPayload";
 
 import { labelOfAddress } from "../../../utils/addressHelpers";
 import AddressPicker from "./AddressPicker";
@@ -163,16 +165,48 @@ export default function QuotePage() {
     }
 
     try {
+      // Construir el payload mapeado igual que para /create
       const dimensions = calculateTotalCartDimensions();
+      const mappedPayload = mapCreateDeliveryPayload({
+        userId: "user_456", // Igual que en useLocalDeliveries
+        sellerId: ORIGIN_CODE, // Igual que en useLocalDeliveries
+        cartId: `cart-${Date.now()}`,
+        items: cart.items,
+        package: {
+          weight: Number(dimensions.weight),
+          length: Number(dimensions.length),
+          width: Number(dimensions.width),
+          height: Number(dimensions.height),
+        },
+        shippingInfo: {
+          originAddressId: ORIGIN_CODE,
+          destinationAddressId: selectedAddress.countyCode || "",
+          carrierName: selected.serviceName || "EXPRESS",
+          serviceType: selected.serviceName || "EXPRESS",
+          estimatedCost: Number(selected.price),
+          street: selectedAddress.street,
+          number: selectedAddress.number,
+        },
+        declaredWorth: calculateTotalDeclaredWorth(),
+        notes: "Creado desde frontend",
+      });
 
-      // Guardar en localStorage y backend
+      // Guardar el JSON mapeado en la base de datos y obtener el _id
+      const quoteRecord = await saveQuoteRecord(mappedPayload);
+      if (quoteRecord && quoteRecord._id) {
+        localStorage.setItem("quoteRecordId", quoteRecord._id);
+      }
+
+      // Crear el envío normalmente
       const delivery = await addDelivery({
         status: "Preparando",
         shippingInfo: {
           estimatedCost: Number(selected.price),
           serviceType: selected.serviceName || "EXPRESS",
-          originAddressId: "addr_origin_123",
-          destinationAddressId: (selectedAddress as any)._id ?? selectedAddress.id,
+          originAddressId: ORIGIN_CODE,
+          destinationAddressId: selectedAddress.countyCode || "",
+          street: selectedAddress.street,
+          number: selectedAddress.number,
         },
         items: cart.items,
         package: {

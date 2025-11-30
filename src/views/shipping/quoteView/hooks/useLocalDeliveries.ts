@@ -1,5 +1,5 @@
 // Hook para manejar envíos almacenados localmente (simulado)
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 import { createDelivery as createDeliveryBackend } from "../../../../db/config/postal.service";
 
 export interface LocalDelivery {
@@ -11,6 +11,8 @@ export interface LocalDelivery {
     serviceType: string;
     originAddressId: string;
     destinationAddressId: string;
+    street?: string;
+    number?: string;
   };
   items: any[];
   package: {
@@ -26,35 +28,11 @@ export interface LocalDelivery {
   paymentId?: string;
 }
 
-const STORAGE_KEY = "local_deliveries";
 
 export function useLocalDeliveries() {
-  const [deliveries, setDeliveries] = useState<LocalDelivery[]>([]);
 
-  // Cargar envíos del localStorage al montar
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setDeliveries(JSON.parse(stored));
-      } catch (e) {
-        console.error("Error parsing stored deliveries:", e);
-        setDeliveries([]);
-      }
-    }
-  }, []);
-
-  // Generar tracking number único
-  const generateTrackingNumber = (): string => {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    return `ENV-${timestamp}-${random}`;
-  };
-
-  // Agregar nuevo envío
+  // Agregar nuevo envío SOLO en backend
   const addDelivery = async (delivery: Omit<LocalDelivery, "_id" | "trackingNumber" | "createdAt">) => {
-    let trackingNumber = generateTrackingNumber();
-
     // Construir payload con la estructura esperada por el backend
     const backendDeliveryPayload = {
       userId: "user_456", // TODO: Reemplazar por contexto de usuario real
@@ -79,6 +57,8 @@ export function useLocalDeliveries() {
         carrierName: "Chilexpress",
         serviceType: delivery.shippingInfo?.serviceType || delivery.selectedOption?.serviceName || "EXPRESS",
         estimatedCost: Number(delivery.shippingInfo?.estimatedCost ?? 0),
+        street: delivery.shippingInfo?.street || delivery.destinationAddress?.street || "",
+        number: delivery.shippingInfo?.number || delivery.destinationAddress?.number || "",
       },
       declaredWorth: Number(
         (delivery as any).declaredWorth ??
@@ -88,55 +68,25 @@ export function useLocalDeliveries() {
     };
 
     // Enviar al backend usando el helper común
-    try {
-      const savedDelivery = await createDeliveryBackend(backendDeliveryPayload);
-      if (savedDelivery) {
-        // Preferir el trackingNumber/id que retorne el backend
-        trackingNumber = savedDelivery.trackingNumber ?? trackingNumber;
-        // si backend devuelve un _id o id, úsalo
-        const backendId = savedDelivery._id ?? savedDelivery.id;
-
-        const newDeliveryFromBackend: LocalDelivery = {
-          ...delivery,
-          _id: backendId ? String(backendId) : `local_${Date.now()}`,
-          trackingNumber,
-          createdAt: savedDelivery.createdAt ?? new Date().toISOString(),
-        };
-
-        const updated = [newDeliveryFromBackend, ...deliveries];
-        setDeliveries(updated);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-        return newDeliveryFromBackend;
-      }
-    } catch (err) {
-      console.warn("⚠️ No se pudo guardar en backend, se guardará localmente:", err);
-      // Continuar y guardar localmente abajo
+    const savedDelivery = await createDeliveryBackend(backendDeliveryPayload);
+    if (savedDelivery) {
+      // Preferir el trackingNumber/id que retorne el backend
+      const trackingNumber = savedDelivery.trackingNumber;
+      const backendId = savedDelivery._id ?? savedDelivery.id;
+      const newDeliveryFromBackend: LocalDelivery = {
+        ...delivery,
+        _id: backendId ? String(backendId) : `local_${Date.now()}`,
+        trackingNumber,
+        createdAt: savedDelivery.createdAt ?? new Date().toISOString(),
+      };
+      // Opcional: podrías actualizar el estado local si lo deseas
+      return newDeliveryFromBackend;
+    } else {
+      throw new Error("No se pudo crear el envío en el backend");
     }
-
-    // Si no se pudo guardar en backend, crear el objeto local con el tracking number
-    const newDelivery: LocalDelivery = {
-      ...delivery,
-      _id: `local_${Date.now()}`,
-      trackingNumber,
-      createdAt: new Date().toISOString(),
-    };
-
-    const updated = [newDelivery, ...deliveries];
-    setDeliveries(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-    return newDelivery;
-  };
-
-  // Obtener envíos por usuario (simulado)
-  const getByUserId = () => {
-    return deliveries;
   };
 
   return {
-    deliveries,
     addDelivery,
-    getByUserId,
   };
 }

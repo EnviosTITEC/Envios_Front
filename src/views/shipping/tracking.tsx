@@ -58,19 +58,39 @@ interface DeliveryDetails extends LocalDelivery {
 
 const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   Preparando: {
-    color: "info",
+    color: "warning",
     icon: <WarningAmberIcon />,
     label: "Preparando envío",
   },
   "En tránsito": {
-    color: "warning",
+    color: "info",
     icon: <LocalShippingIcon />,
     label: "En tránsito",
+  },
+  "EnTransito": {
+    color: "info",
+    icon: <LocalShippingIcon />,
+    label: "En tránsito",
+  },
+  Enviado: {
+    color: "info",
+    icon: <LocalShippingIcon />,
+    label: "Enviado",
   },
   Entregado: {
     color: "success",
     icon: <CheckCircleOutlineIcon />,
     label: "Entregado",
+  },
+  Cancelado: {
+    color: "error",
+    icon: <WarningAmberIcon />,
+    label: "Cancelado",
+  },
+  Devuelto: {
+    color: "secondary",
+    icon: <WarningAmberIcon />,
+    label: "Devuelto",
   },
 };
 
@@ -79,44 +99,7 @@ export default function Tracking() {
   const [delivery, setDelivery] = useState<DeliveryDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [source, setSource] = useState<"backend" | "local" | null>(null);
 
-  const searchLocalStorage = (trackingNumber: string): DeliveryDetails | null => {
-    try {
-      const stored = localStorage.getItem("local_deliveries");
-      if (!stored) return null;
-      const deliveries = JSON.parse(stored) as any[];
-      const found = deliveries.find((d) => d.trackingNumber === trackingNumber);
-      if (found) {
-        // selectedOption y destinationAddress pueden estar presentes solo en local
-        const selectedOption = (found as any).selectedOption || {};
-        const destinationAddress = (found as any).destinationAddress || {};
-        // Calcular fecha estimada de entrega (usar etaDescription o sumar 1 día)
-        let estimatedDeliveryDate = selectedOption.etaDescription;
-        if (!estimatedDeliveryDate && found.createdAt) {
-          const date = new Date(found.createdAt);
-          date.setDate(date.getDate() + 1);
-          estimatedDeliveryDate = date.toISOString();
-        }
-        return {
-          ...found,
-          carrierName: "Chilexpress",
-          serviceType: selectedOption.serviceName || found.shippingInfo?.serviceType || "—",
-          estimatedCost: selectedOption.price ?? found.shippingInfo?.estimatedCost ?? 0,
-          currency: selectedOption.currency || "CLP",
-          weight: found.package?.weight || 0,
-          dimensions: found.package,
-          estimatedDeliveryDate,
-          destinationAddress,
-          selectedOption,
-        };
-      }
-      return null;
-    } catch (e) {
-      console.error("Error searching localStorage:", e);
-      return null;
-    }
-  };
 
   const handleSearch = async () => {
     if (!trackingInput.trim()) {
@@ -127,39 +110,30 @@ export default function Tracking() {
     setLoading(true);
     setError("");
     setDelivery(null);
-    setSource(null);
+
 
     try {
-      // Primero intentar en el backend
+      // Solo buscar en el backend
       const API_BASE = import.meta.env.VITE_API_URL || "/api";
       const response = await fetch(
         `${API_BASE}/deliveries/tracking/${trackingInput.trim()}`
       );
-
       if (response.ok) {
         const data = await response.json();
         setDelivery(data);
-        setSource("backend");
+        setLoading(false);
+        return;
+      } else {
+        setError(
+          `No se encontró envío con el número de seguimiento "${trackingInput.trim()}"`
+        );
+        setLoading(false);
         return;
       }
     } catch (err) {
-      console.warn("Backend search failed, trying localStorage...", err);
-    }
-
-    // Si falla el backend, buscar en localStorage
-    const localDelivery = searchLocalStorage(trackingInput.trim());
-    if (localDelivery) {
-      setDelivery(localDelivery);
-      setSource("local");
+      setError("Error al buscar el envío en el backend.");
       setLoading(false);
-      return;
     }
-
-    // No encontrado en ningún lado
-    setError(
-      `No se encontró envío con el número de seguimiento "${trackingInput.trim()}"`
-    );
-    setLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -169,7 +143,11 @@ export default function Tracking() {
   };
 
   const getStatusConfig = (status: string) => {
-    return STATUS_CONFIG[status] || STATUS_CONFIG.Preparando;
+    // Buscar en el objeto STATUS_CONFIG de manera case-insensitive
+    const statusKey = Object.keys(STATUS_CONFIG).find(
+      (key) => key.toLowerCase() === status?.toLowerCase()
+    );
+    return statusKey ? STATUS_CONFIG[statusKey] : STATUS_CONFIG.Preparando;
   };
 
   const formatDate = (dateString: string | undefined) => {
@@ -242,27 +220,36 @@ export default function Tracking() {
           {/* Mensaje de error */}
           {error && <Alert severity="error">{error}</Alert>}
 
-          {/* Badge de fuente */}
-          {source && (
-            <Alert severity={source === "backend" ? "success" : "warning"} sx={{ mb: 2 }}>
-              {source === "backend"
-                ? "Información obtenida del servidor"
-                : "Información obtenida localmente"}
-            </Alert>
-          )}
+
 
           {/* Resultado de búsqueda */}
           {delivery && (
-            <Grid container spacing={4} sx={{ mt: 1, width: "100%", pr: 1 }}>
-              {/* Columna izquierda - Información principal */}
-              <Grid item xs={12} md={6} sx={{ minWidth: 0 }}>
-                <Card variant="outlined" sx={{ p: 3 }}>
-                  <Box sx={{ mb: 2.5 }}>
-                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                      Número de seguimiento
-                    </Typography>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, fontFamily: "monospace", fontSize: "0.95rem", mb: 1.5 }}>
-                      {delivery.trackingNumber || "—"}
+            <Card variant="outlined" sx={{ p: 4 }}>
+              {/* Encabezado con seguimiento y estado */}
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                  Detalles del Envío
+                </Typography>
+                <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.8 }}>
+                  Número de Tracking
+                </Typography>
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    fontFamily: "monospace", 
+                    fontSize: "1.1rem",
+                    color: "primary.main",
+                    mb: 2
+                  }}
+                >
+                  {delivery.trackingNumber || "—"}
+                </Typography>
+                
+                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Estado Actual
                     </Typography>
                     {getStatusConfig(delivery.status).icon ? (
                       <Chip
@@ -281,92 +268,165 @@ export default function Tracking() {
                       />
                     )}
                   </Box>
+                </Box>
+              </Box>
 
-                  <Divider sx={{ my: 2.5 }} />
+              <Divider sx={{ my: 3 }} />
 
-                  {/* Información del envío */}
-                  <Stack spacing={2.5}>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Transportista
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {delivery.carrierName || "Chilexpress"}
-                      </Typography>
-                    </Box>
+              {/* Información en Grid 2x2 */}
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                {/* Transportista */}
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Transportista
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "1rem" }}>
+                      {delivery.carrierName || "Chilexpress"}
+                    </Typography>
+                  </Box>
+                </Grid>
 
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Tipo de servicio
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {delivery.serviceType || (delivery as any).selectedOption?.serviceName || (delivery as any).shippingInfo?.serviceType || "—"}
-                      </Typography>
-                    </Box>
+                {/* Tipo de servicio */}
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Tipo de Servicio
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "1rem" }}>
+                      {delivery.serviceType || (delivery as any).selectedOption?.serviceName || (delivery as any).shippingInfo?.serviceType || "—"}
+                    </Typography>
+                  </Box>
+                </Grid>
 
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Costo estimado
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatCurrency(delivery.estimatedCost, delivery.currency)}
-                      </Typography>
-                    </Box>
+                {/* Costo estimado */}
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Costo Estimado
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700, fontSize: "1rem", color: "primary.main" }}>
+                      {formatCurrency(delivery.estimatedCost, delivery.currency)}
+                    </Typography>
+                  </Box>
+                </Grid>
 
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Peso total
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {delivery.weight || delivery.package?.weight || "—"} kg
-                      </Typography>
-                    </Box>
-
-
-
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Fecha de creación
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatDate(delivery.createdAt)}
-                      </Typography>
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                        Entrega estimada
-                      </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatDate(delivery.estimatedDeliveryDate)}
-                      </Typography>
-                    </Box>
-
-                    {delivery.destinationAddress && (
-                      <Box>
-                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5 }}>
-                          Dirección de destino
-                        </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {delivery.destinationAddress.street || delivery.destinationAddress.calle || "—"} {delivery.destinationAddress.number || delivery.destinationAddress.numero || ""}, {delivery.destinationAddress.communeId || delivery.destinationAddress.comuna_id || "—"}, {delivery.destinationAddress.region_id || delivery.destinationAddress.regionId || "—"}
-                        </Typography>
-                        {delivery.destinationAddress.references && (
-                          <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                            Referencias: {delivery.destinationAddress.references}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
-                  </Stack>
-                </Card>
+                {/* Peso */}
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Peso
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "1rem" }}>
+                      {delivery.weight || delivery.package?.weight || "—"} kg
+                    </Typography>
+                  </Box>
+                </Grid>
               </Grid>
 
+              <Divider sx={{ my: 3 }} />
 
-            </Grid>
+              {/* Paquete - Dimensiones */}
+              {delivery.package && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
+                    Paquete
+                  </Typography>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.3 }}>
+                        Peso
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {delivery.package.weight} kg
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.3 }}>
+                        Largo
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {delivery.package.length} cm
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.3 }}>
+                        Ancho
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {delivery.package.width} cm
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.3 }}>
+                        Alto
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {delivery.package.height} cm
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* Fechas */}
+              <Grid container spacing={3} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Fecha de Creación
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {formatDate(delivery.createdAt)}
+                    </Typography>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mb: 0.5, fontWeight: 600 }}>
+                      Entrega Estimada
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {formatDate(delivery.estimatedDeliveryDate)}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              {/* Dirección de destino */}
+              {delivery.destinationAddress && (
+                <>
+                  <Divider sx={{ my: 3 }} />
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>
+                      Dirección de Destino
+                    </Typography>
+                    <Box sx={{ bgcolor: "background.default", p: 2, borderRadius: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {delivery.destinationAddress.street || delivery.destinationAddress.calle || "—"} {delivery.destinationAddress.number || delivery.destinationAddress.numero || ""}, {delivery.destinationAddress.communeId || delivery.destinationAddress.comuna_id || "—"}, {delivery.destinationAddress.region_id || delivery.destinationAddress.regionId || "—"}
+                      </Typography>
+                      {delivery.destinationAddress.references && (
+                        <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1 }}>
+                          <strong>Referencias:</strong> {delivery.destinationAddress.references}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                </>
+              )}
+
+              {/* Botones de acción */}
+              <Divider sx={{ my: 3 }} />
+              <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
+              </Stack>
+            </Card>
           )}
 
           {/* Placeholder cuando no hay búsqueda */}
-          {!delivery && !loading && !error && !source && (
+          {!delivery && !loading && !error && (
             <Card variant="outlined" sx={{ p: 3, textAlign: "center" }}>
               <LocalShippingIcon
                 sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
