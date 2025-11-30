@@ -22,6 +22,7 @@ import { useQuote } from "./hooks/useQuote";
 import { useChilexpress } from "./hooks/useChilexpress";
 import { useCart } from "./hooks/useCart";
 import { useLocalDeliveries } from "./hooks/useLocalDeliveries";
+import { saveQuoteRecord } from "../../../db/config/quotes.service";
 
 import { labelOfAddress } from "../../../utils/addressHelpers";
 import AddressPicker from "./AddressPicker";
@@ -163,9 +164,18 @@ export default function QuotePage() {
     }
 
     try {
+      // Guardar la cotización seleccionada en la base de datos y obtener el _id
+      const quoteRecord = await saveQuoteRecord({
+        quote: selected,
+        address: selectedAddress,
+        cart: cart.items,
+        createdAt: new Date().toISOString(),
+      });
+      if (quoteRecord && quoteRecord._id) {
+        localStorage.setItem("quoteRecordId", quoteRecord._id);
+      }
+
       const dimensions = calculateTotalCartDimensions();
-
-
       const delivery = await addDelivery({
         status: "Preparando",
         shippingInfo: {
