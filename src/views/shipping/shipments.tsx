@@ -206,7 +206,6 @@ export default function Shipments() {
     }
   };
 
-  // Actualizar la función handleUpdateStatus para usar el tracking ID y el nuevo endpoint
   const handleUpdateStatus = async (newStatus?: string) => {
     if (!selectedDelivery || !selectedDelivery.trackingNumber) {
       console.error("No se encontró el envío seleccionado o su número de tracking.");

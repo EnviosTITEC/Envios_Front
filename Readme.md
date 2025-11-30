@@ -2,7 +2,7 @@
 
 Template web para la asignatura de Gestión de Proyecto Informático (GPI) de la Universidad de Valparaíso. Este proyecto proporciona una base robusta para desarrollar aplicaciones web modernas con React, TypeScript y otras tecnologías actuales.
 
-## 🚀 Tecnologías
+## Tecnologías
 
 Este template utiliza las siguientes tecnologías:
 
@@ -15,7 +15,7 @@ Este template utiliza las siguientes tecnologías:
 - **pnpm**: Gestor de paquetes rápido y eficiente
 - **Axios**: Cliente HTTP para realizar peticiones al backend
 
-## 📁 Estructura de Carpetas
+## Estructura de Carpetas
 
 ```
 /
@@ -52,7 +52,7 @@ Este template utiliza las siguientes tecnologías:
 
 Para una gestión más eficiente del proyecto, se recomienda añadir las siguientes carpetas:
 
-#### 📂 `src/db`
+#### `src/db`
 Contiene todo lo relacionado con la gestión de datos y conexión con el backend de NestJS:
 
 ```
@@ -90,7 +90,7 @@ api.interceptors.request.use(config => {
 });
 ```
 
-#### 📂 `src/hooks`
+#### `src/hooks`
 Hooks personalizados de React para reutilizar lógica:
 
 ```
@@ -135,7 +135,7 @@ export function useAuth() {
 }
 ```
 
-#### 📂 `src/utils`
+#### `src/utils`
 Funciones de utilidad reutilizables:
 
 ```
@@ -165,7 +165,7 @@ export const formatCurrency = (amount: number): string => {
 };
 ```
 
-#### 📂 `src/components` (organización detallada)
+#### `src/components` (organización detallada)
 Una estructura más organizada para componentes:
 
 ```
@@ -205,7 +205,7 @@ Button/
 └── index.ts           # Exporta el componente
 ```
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ### Sistema de Layouts
 
@@ -314,7 +314,7 @@ Las rutas se configuran en `src/routes/Routes.tsx` utilizando React Router. Cada
 - **Diseño Responsivo**: Adaptado para móviles y escritorio
 - **Autenticación**: Sistema de login, registro y recuperación de contraseña
 
-## 🚦 Guía de Instalación y Ejecución
+## Guía de Instalación y Ejecución
 
 ### Requisitos Previos
 
@@ -401,7 +401,7 @@ curl -fsSL https://get.pnpm.io/install.sh | sh -
   pnpm lint
   ```
 
-## 📱 Características Responsivas
+## Características Responsivas
 
 La aplicación está diseñada para funcionar en dispositivos móviles y de escritorio:
 
@@ -409,7 +409,7 @@ La aplicación está diseñada para funcionar en dispositivos móviles y de escr
 - En escritorio, se muestra un menú lateral fijo
 - Los formularios y componentes se adaptan al tamaño de la pantalla
 
-## 🎨 Personalización de Temas
+## Personalización de Temas
 
 El tema de Material UI está configurado en `src/style/theme.mui.ts`. Puedes modificar colores, tipografía y otros aspectos del tema allí.
 
@@ -426,14 +426,14 @@ Los colores principales del tema son:
 }
 ```
 
-## 📝 Notas para Estudiantes
+## Notas para Estudiantes
 
 - Este template está diseñado como punto de partida para proyectos web en la asignatura de GPI
 - Se recomienda familiarizarse con React, TypeScript y los conceptos básicos de los frameworks utilizados
 - Puedes personalizar y extender este template según las necesidades de tu proyecto
 - La estructura está diseñada para ser escalable y mantener el código organizado a medida que el proyecto crece
 
-## 🔍 Ejemplos de Uso
+## Ejemplos de Uso
 
 ### Conectar con el Backend NestJS
 
