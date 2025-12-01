@@ -140,7 +140,7 @@ export default function AddressesPage() {
           }
         />
 
-        <Card variant="outlined" sx={{ p: 1.5, mt: 1.5, mb: 2 }}>
+        <Card variant="outlined" sx={{ p: 1.5, mt: 1.5, mb: 2, border: "2px solid #22c55e", "&:hover": { borderColor: "#16a34a" } }}>
           <AddressTable
             rows={items}
             loading={loading}

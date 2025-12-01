@@ -33,7 +33,7 @@ export function useChilexpress() {
         console.log("Regiones cargadas:", regions);
         setState((prev) => ({ ...prev, regions, loading: false }));
       } catch (error: any) {
-        console.error("❌ Error cargando regiones:", error);
+        console.error("Error cargando regiones:", error);
         setState((prev) => ({
           ...prev,
           error: error?.message || "Error cargando regiones de Chilexpress",

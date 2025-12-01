@@ -17,7 +17,7 @@ export default function PageCard({ children, sx }: Props) {
         border: `1px solid rgba(16,24,40,0.08)`,
         boxShadow: "0 8px 24px rgba(16,24,40,0.06)",
 
-        // 🔒 sin efecto "botón"
+        // Sin efecto "botón"
         transition: "none !important",
         "&:hover": {
           transform: "none !important",

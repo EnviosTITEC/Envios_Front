@@ -35,7 +35,7 @@ export function useLocalDeliveries() {
   const addDelivery = async (delivery: Omit<LocalDelivery, "_id" | "trackingNumber" | "createdAt">) => {
     // Construir payload con la estructura esperada por el backend
     const backendDeliveryPayload = {
-      userId: "user_456", // TODO: Reemplazar por contexto de usuario real
+      userId: "user_456",
       sellerId: delivery.shippingInfo?.originAddressId || "seller_789",
       cartId: `cart-${Date.now()}`,
       paymentId: (delivery as any).paymentId ?? "pendiente",

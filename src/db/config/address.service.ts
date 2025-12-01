@@ -24,7 +24,7 @@ function writeLocal(userId: string, rows: AddressRow[]) {
   }
 }
 
-/** 🔹 Obtener todas las direcciones de un usuario */
+// Obtener todas las direcciones de un usuario
 export async function fetchAddresses(userId: string): Promise<AddressRow[]> {
   try {
     const res = await fetch(`${API_BASE}/addresses?userId=${encodeURIComponent(userId)}`, {
@@ -46,7 +46,7 @@ export async function fetchAddresses(userId: string): Promise<AddressRow[]> {
   }
 }
 
-/** 🔹 Crear una nueva dirección */
+// Crear una nueva dirección
 export async function createAddress(userId: string, data: NewAddress): Promise<AddressRow> {
   const body = {
     street: data.street,
@@ -96,7 +96,7 @@ export async function createAddress(userId: string, data: NewAddress): Promise<A
   }
 }
 
-/** 🔹 Actualizar una dirección existente */
+// Actualizar una dirección existente
 export async function updateAddress(id: number | string, data: Partial<NewAddress>): Promise<AddressRow> {
   try {
     const body = {
