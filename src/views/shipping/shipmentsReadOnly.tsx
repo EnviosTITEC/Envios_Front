@@ -348,6 +348,27 @@ export default function ShipmentsReadOnly() {
                   </Box>
                 )}
 
+                {/* Dirección de envío */}
+                {/* Dirección de envío: calle, número y RegionID (destinationAddressId) */}
+                {selectedDelivery.shippingInfo?.destinationAddressId && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 1 }}>
+                      DIRECCIÓN DE ENVÍO
+                    </Typography>
+                    <Box sx={{ p: 2, bgcolor: "#f9f9f9", borderRadius: 1.5, border: "1px solid #e8e8e8" }}>
+                      <Typography variant="body2">
+                        <strong>RegionID:</strong> {selectedDelivery.shippingInfo.destinationAddressId}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Calle:</strong> {selectedDelivery.shippingInfo.street || "—"}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Número:</strong> {selectedDelivery.shippingInfo.number || "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+
                 {/* Fecha de creación */}
                 {selectedDelivery.createdAt && (
                   <Box>

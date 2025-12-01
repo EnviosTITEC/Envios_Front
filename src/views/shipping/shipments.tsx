@@ -698,7 +698,7 @@ export default function Shipments() {
                 </Typography>
                 <Box sx={{ mb: 1.5 }}>
                   <Typography variant="caption" sx={{ color: "text.secondary" }}>
-                    ID
+                    RegionID
                   </Typography>
                   <Typography sx={{ fontWeight: 500, mt: 0.3 }}>
                     {selectedDelivery.shippingInfo?.destinationAddressId || "—"}
